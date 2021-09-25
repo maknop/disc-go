@@ -1,2 +1,3 @@
-# -disc-go
-A Discord library written in Golang.
+# disc-go
+
+A Opensource Discord library written in Golang.
