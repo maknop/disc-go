@@ -4,7 +4,10 @@ RUN mkdir /app
 ADD . /app/
 WORKDIR /app
 
-RUN go mod download
-RUN go build -o main ./...
+RUN apk update
+RUN apk add --no-cache git
+
+RUN go mod download \
+    go build -o main /
 
 CMD ["/app/main"]
