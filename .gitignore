@@ -1,0 +1,8 @@
+# Editor/IDE
+.vscode
+
+# MacOS
+.DS_Store
+
+# Environment Variables
+.env
