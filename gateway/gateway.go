@@ -13,7 +13,7 @@ func Connect() {
 		log.Error(err)
 	}
 
-	conn, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
+	ws, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
 	if err != nil {
 		log.Error(err)
 	} else {
@@ -21,7 +21,7 @@ func Connect() {
 	}
 
 	// send message
-	msg := conn.WriteMessage(websocket.TextMessage, []byte("Message sent successful!"))
+	msg := ws.WriteMessage(websocket.TextMessage, []byte("Message sent successful!"))
 	if err != nil {
 		log.Error(err)
 	} else {
@@ -29,10 +29,13 @@ func Connect() {
 	}
 
 	// receive message
-	_, message, err := conn.ReadMessage()
+	_, message, err := ws.ReadMessage()
 	if err != nil {
 		log.Error(err)
 	} else {
 		log.Info(message)
 	}
+
+	// Keeps connection opened but nothing more occurs.
+	select {}
 }
