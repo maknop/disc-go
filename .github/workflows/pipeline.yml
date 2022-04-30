@@ -1,4 +1,4 @@
-name: Go
+name: Go Pipeline
 
 on:
   push:
@@ -16,7 +16,10 @@ jobs:
     - name: Set up Go
       uses: actions/setup-go@v2
       with:
-        go-version: 1.17
+        go-version: 1.16
 
     - name: Build
-      run: go build -v src/main.go
+      run: go build -v ./...
+
+    - name: Test
+      run: go test -v ./...
