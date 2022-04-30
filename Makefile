@@ -1,0 +1,5 @@
+install:
+	go get ./...
+
+run:
+	go run src/main.go
