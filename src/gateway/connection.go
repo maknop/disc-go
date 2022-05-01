@@ -13,6 +13,7 @@ import (
 
 var (
 	socketUrl = "wss://gateway.discord.gg/?v=9&encoding=json"
+	curr_time = time.Now().Format(time.Kitchen)
 	interrupt chan os.Signal
 )
 
@@ -23,12 +24,16 @@ func EstablishConnection() {
 
 	connection, _, err := websocket.DefaultDialer.Dial(socketUrl, nil)
 	if err != nil {
-		fmt.Println("Connection could not be established: ", err)
+		log.Printf("%s: Connection could not be established: %s", curr_time, err)
 	}
 
 	for {
-		heartbeat_interval, _ := ReceiveMessage(connection)
-		log.Printf("Value of heartbeat interval is: %d milliseconds (%d seconds)", heartbeat_interval, heartbeat_interval/1000)
+		heartbeat_interval, err := ReceiveMessage(connection)
+		if err != nil {
+			panic(fmt.Sprintf("%s: Could not retrieve heartbeat interval: %s", curr_time, err))
+		} else {
+			log.Printf("%s: Value of heartbeat interval is: %d milliseconds (%d seconds)", curr_time, heartbeat_interval, heartbeat_interval/1000)
+		}
 
 		time.Sleep(time.Duration(heartbeat_interval))
 
@@ -39,10 +44,10 @@ func EstablishConnection() {
 func ReceiveMessage(connection *websocket.Conn) (int, error) {
 	_, msg, err := connection.ReadMessage()
 	if err != nil {
-		panic(fmt.Sprintf("Error receiving message: %s", err))
+		panic(fmt.Sprintf("%s: Error receiving message: %s", curr_time, err))
 	}
 
-	log.Printf("Received: %s\n", msg)
+	log.Printf("%s: Received: %s\n", curr_time, msg)
 
 	return strconv.Atoi(string(msg[53:58]))
 }
@@ -50,10 +55,10 @@ func ReceiveMessage(connection *websocket.Conn) (int, error) {
 func SendMessage(connection *websocket.Conn) {
 	err := connection.WriteMessage(websocket.TextMessage, []byte("op: 1, d: 251"))
 	if err != nil {
-		log.Println(fmt.Sprintf("Error during writing to websocket: %s", err))
+		log.Println(fmt.Sprintf("%s: Error during writing to websocket: %s", curr_time, err))
 		panic("Shutting down...")
 	} else {
-		log.Printf("Message sent back to server.")
+		log.Printf("%s: Message sent back to server.", curr_time)
 	}
 
 }
