@@ -1,12 +1,13 @@
 package gateway
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
 	"os"
 	"os/signal"
-	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gorilla/websocket"
@@ -33,21 +34,22 @@ func EstablishConnection(ctx context.Context) {
 	connection.SetCompressionLevel(1)
 
 	for {
+		//jitter := rand.Float32()
 		log.Printf("%s: Waiting for response from server.", curr_time)
-		heartbeat_interval, err := ReceiveMessage(connection)
+		heartbeat_interval, sequence_num := ReceiveMessage(connection)
 		if err != nil {
 			log.Fatalf("%s: Could not retrieve heartbeat interval: %s", curr_time, err)
 		} else {
-			log.Printf("%s: SUCCESS: Value of heartbeat interval is: %d milliseconds (%d seconds)", curr_time, heartbeat_interval, heartbeat_interval/1000)
+			log.Printf("%s: SUCCESS: Value of heartbeat interval is: %d milliseconds", curr_time, heartbeat_interval)
 		}
 
-		time.Sleep(time.Duration(heartbeat_interval))
-
-		SendMessage(connection)
+		//time.Sleep(time.Duration(float32(heartbeat_interval) * jitter))
+		time.Sleep(time.Duration(*heartbeat_interval))
+		SendMessage(connection, sequence_num)
 	}
 }
 
-func ReceiveMessage(connection *websocket.Conn) (int, error) {
+func ReceiveMessage(connection *websocket.Conn) (*int, *int) {
 	_, msg, err := connection.ReadMessage()
 	if err != nil {
 		log.Fatalf("%s: Error receiving message: %s", curr_time, err)
@@ -55,18 +57,35 @@ func ReceiveMessage(connection *websocket.Conn) (int, error) {
 		log.Printf("%s: Received: %s\n", curr_time, msg)
 	}
 
-	msgData := []string{}
-	jsonMsg, _ := json.MarshalIndent(&msgData, "", " ")
-	log.Printf("json data: %s", jsonMsg)
-	return strconv.Atoi(string(msg[53:58]))
+	var op_10_hello Payload
+
+	if err := json.NewDecoder(bytes.NewReader(msg)).Decode(&op_10_hello); err != nil {
+		log.Fatalf("%s: Error parsing json data: %s", curr_time, err)
+	}
+
+	return op_10_hello.D.Heartbeat_Interval, op_10_hello.S
 }
 
-func SendMessage(connection *websocket.Conn) {
-	err := connection.WriteMessage(websocket.TextMessage, []byte("op: 1, d: 251"))
+func SendMessage(connection *websocket.Conn, sequence_num *int) {
+	var op_code *int
+	op_code = new(int)
+	*op_code = 1
+
+	op_1_heartbeat := Payload{
+		OP: op_code,
+		D:  Data{Sequence: sequence_num},
+	}
+
+	op_1_heartbeat_json, err := json.Marshal(op_1_heartbeat)
+	println(strings.ToLower(string(op_1_heartbeat_json)))
+	if err != nil {
+		log.Fatalf("%s: Error converting to json data: %s", curr_time, err)
+	}
+
+	err = connection.WriteJSON(op_1_heartbeat_json)
 	if err != nil {
 		log.Fatalf(fmt.Sprintf("%s: Error during writing to websocket: %s", curr_time, err))
 	} else {
 		log.Printf("%s: Message sent back to server.", curr_time)
 	}
-
 }
