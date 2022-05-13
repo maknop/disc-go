@@ -1,5 +1,5 @@
-.install:
-	go get ./...
+install:
+	go get -d ./...
 
 run:
 	go run src/main.go
