@@ -51,7 +51,7 @@ func ReceiveMessage(connection *websocket.Conn) (int, *int) {
 		log.Printf("%s: [ OP CODE 10 ] Received: %s\n", curr_time, msg)
 	}
 
-	var op_10_hello OP_10
+	var op_10_hello OP_10_Hello
 
 	if err := json.NewDecoder(bytes.NewReader(msg)).Decode(&op_10_hello); err != nil {
 		log.Fatalf("%s: Error parsing json data: %s", curr_time, err)
@@ -61,7 +61,7 @@ func ReceiveMessage(connection *websocket.Conn) (int, *int) {
 }
 
 func SendMessage(connection *websocket.Conn, sequence_num *int) {
-	op_1_heartbeat := OP_1{
+	op_1_heartbeat := OP_1_Heartbeat{
 		OP: 1,
 		D:  sequence_num,
 	}
@@ -87,7 +87,7 @@ func ACK(connection *websocket.Conn) {
 		log.Printf("%s: [ OP CODE 11 ] Received: %s\n", curr_time, msg)
 	}
 
-	var op_11_ack OP_11
+	var op_11_ack OP_11_Heartbeat_ACK
 
 	if err := json.NewDecoder(bytes.NewReader(msg)).Decode(&op_11_ack); err != nil {
 		log.Fatalf("%s: Error parsing json data: %s", curr_time, err)
