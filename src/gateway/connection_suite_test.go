@@ -1,10 +1,17 @@
 package gateway
 
 import (
-	"fmt"
-	"testing"
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
 )
 
-func TestSendMessage(t *testing.T) {
-	fmt.Println("Placeholder for test.")
-}
+var _ = Describe("", func() {
+	Context("", func() {
+		It("", func() {
+			By("")
+			Eventually(func() bool {
+				return true // Placeholder for noww
+			}).Should(BeTrue())
+		})
+	})
+})
