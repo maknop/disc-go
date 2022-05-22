@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"os"
 	"time"
 
 	opcodes "github.com/maknop/disc-go/src/types"
@@ -79,27 +80,29 @@ func SendMessage(connection *websocket.Conn, sequence_num *int) {
 }
 
 func ACK(connection *websocket.Conn) {
+	var op_11_ack opcodes.OP_11_Heartbeat_ACK
+
 	_, msg, err := connection.ReadMessage()
 	if err != nil {
 		log.Fatalf("%s: [ OP CODE 11 ] Error receiving message: %s", curr_time, err)
-	} else {
-		log.Printf("%s: [ OP CODE 11 ] Received: %s\n", curr_time, msg)
 	}
-
-	var op_11_ack opcodes.OP_11_Heartbeat_ACK
 
 	if err := json.NewDecoder(bytes.NewReader(msg)).Decode(&op_11_ack); err != nil {
 		log.Fatalf("%s: Error parsing json data: %s", curr_time, err)
+	} else {
+		log.Printf("%s: [ OP CODE 11 ] Received: %s\n", curr_time, msg)
 	}
 
 }
 
 func Identity(connection *websocket.Conn) {
+	auth_token := os.Getenv("AUTH_TOKEN")
+
 	op_2_identity := opcodes.OP_2_Identity{
 		OP: 2,
 		D: opcodes.OP_2_Identity_Data{
-			Token:   "",
-			Intents: 7,
+			Token:   auth_token,
+			Intents: 513,
 			Properties: opcodes.OP_2_Identity_Properties{
 				OS:      "Linux",
 				Browser: "disc-go",
@@ -117,5 +120,16 @@ func Identity(connection *websocket.Conn) {
 }
 
 func Ready(connection *websocket.Conn) {
-	ready := opcodes.Ready{}
+	var ready opcodes.Ready
+
+	_, msg, err := connection.ReadMessage()
+	if err != nil {
+		log.Fatalf("%s: [ Ready ] Error receiving message: %s", curr_time, err)
+	}
+
+	if err := json.NewDecoder(bytes.NewReader(msg)).Decode(&ready); err != nil {
+		log.Fatalf("%s: Error parsing json data: %s", curr_time, err)
+	} else {
+		log.Printf("%s: [ Ready ] Received: %s", msg, curr_time)
+	}
 }

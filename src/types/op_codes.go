@@ -54,18 +54,18 @@ type Ready struct {
 }
 
 type User struct {
-	id            string `json:"id"`
-	username      string `json:"username"`
-	discriminator string `json:"discriminator"`
-	avatar        string `json:"avatar"`
+	Id            string `json:"id"`
+	Username      string `json:"username"`
+	Fiscriminator string `json:"discriminator"`
+	Avatar        string `json:"avatar"`
 }
 
 type Unavailable_Guild struct {
-	id          string `json:"id"`
-	unavailable string `json:"unavailable"`
+	Id          string `json:"id"`
+	Unavailable string `json:"unavailable"`
 }
 
 type Application struct {
-	id    string `json:"id"`
-	flags string `json:"flags"`
+	Id    string `json:"id"`
+	Flags string `json:"flags"`
 }

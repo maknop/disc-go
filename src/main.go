@@ -12,6 +12,7 @@ import (
 
 func init() {
 	TerminateGracefully()
+	LoadEnvVars()
 }
 
 func main() {
