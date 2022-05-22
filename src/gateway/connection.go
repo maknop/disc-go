@@ -35,15 +35,16 @@ func EstablishConnection(ctx context.Context) {
 		log.Printf("%s: [ OP CODE 10 ] Value of heartbeat interval is: %d seconds", curr_time, (heartbeat_interval / 1000))
 	}
 
-	time.Sleep(time.Duration((heartbeat_interval / 1000) * int(time.Second)))
-
+	// OP 1 Heartbeat
 	SendMessage(connection, sequence_num)
 
-	time.Sleep(time.Duration((heartbeat_interval / 1000) * int(time.Second)))
-
+	// OP 11 ACK
 	ACK(connection)
 
+	// OP 2 Identity
 	Identity(connection)
+
+	Ready(connection)
 }
 
 func ReceiveMessage(connection *websocket.Conn) (int, *int) {
@@ -113,4 +114,8 @@ func Identity(connection *websocket.Conn) {
 	} else {
 		log.Printf("%s: [ OP CODE 02 ] Sending the following payload: ", curr_time)
 	}
+}
+
+func Ready(connection *websocket.Conn) {
+	ready := opcodes.Ready{}
 }
