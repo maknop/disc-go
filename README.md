@@ -6,4 +6,4 @@
 ![GitHub contributors](https://img.shields.io/github/contributors/maknop/disc-go)
 
 ## Description
-A Golang library for creating Discord bots. The purpose of this project is to better understand the Golang programming language. 
+A Golang library for creating Discord bots.
