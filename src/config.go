@@ -14,8 +14,8 @@ var (
 func LoadEnvVars() {
 	err := godotenv.Load(".env")
 	if err != nil {
-		log.Fatalf("%s: [ OP CODE 10 ] Could not retrieve heartbeat interval: %s", curr_time, err)
+		log.Fatalf("%s: Could not load environment file: %s", curr_time, err)
 	} else {
-		log.Println("Environment variables loaded!")
+		log.Printf("%s: .env file successfully loaded", curr_time)
 	}
 }
