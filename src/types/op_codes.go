@@ -46,11 +46,10 @@ type OP_2_Identity_Properties struct {
 }
 
 type Ready struct {
-	V           int32             `json:"v"`
-	User        User              `json:"user"`
-	Guilds      Unavailable_Guild `json:"guilds"`
-	SessionId   string            `json:"session_id"`
-	application Application       `json:"application"`
+	V         int32             `json:"v"`
+	User      User              `json:"user"`
+	Guilds    Unavailable_Guild `json:"guilds"`
+	SessionId string            `json:"session_id"`
 }
 
 type User struct {
