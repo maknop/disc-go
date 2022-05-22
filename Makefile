@@ -1,7 +1,13 @@
+fmt:
+	go fmt ./...
+
+vet:
+	go vet ./...
+
 install:
 	go get -d ./...
 
-run:
+run: fmt vet
 	go run ./src/...
 
 test:
