@@ -20,6 +20,9 @@ jobs:
       with:
         go-version: 1.18
 
+    - name: Code Examination
+      run: go vet ./src/...
+      
     - name: Build
       run: go build -v ./...
 
