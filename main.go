@@ -7,7 +7,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/maknop/disc-go/src/gateway"
+	"github.com/maknop/disc-go/gateway"
 )
 
 func init() {

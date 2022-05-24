@@ -8,7 +8,7 @@ import (
 	"os"
 	"time"
 
-	opcodes "github.com/maknop/disc-go/src/types"
+	opcodes "github.com/maknop/disc-go/types"
 
 	"github.com/gorilla/websocket"
 	log "github.com/sirupsen/logrus"
