@@ -115,7 +115,7 @@ func Identity(connection *websocket.Conn) {
 	if err != nil {
 		log.Fatalf(fmt.Sprintf("%s: Error during writing to websocket: %s", curr_time, err))
 	} else {
-		log.Printf("%s: [ OP CODE 02 ] Sending the following payload: ", curr_time)
+		log.Printf("%s: [ OP CODE 02 ] Sending Identity payload", curr_time)
 	}
 }
 

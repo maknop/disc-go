@@ -45,26 +45,42 @@ type OP_2_Identity_Properties struct {
 	Device  string `json:"$device"`
 }
 
-type Ready struct {
-	V         int32             `json:"v"`
-	User      User              `json:"user"`
-	Guilds    Unavailable_Guild `json:"guilds"`
-	SessionId string            `json:"session_id"`
+type OP_0_Ready struct {
+	T  string          `json:"t"`
+	S  int32           `json:"s"`
+	OP string          `json:"op"`
+	D  OP_0_Ready_Data `json:"d"`
 }
 
-type User struct {
-	Id            string `json:"id"`
+type OP_0_Ready_Data struct {
+	V                    int32            `json:"v"`
+	UserSettings         []string         `json:"user_settings"`
+	User                 OP_0_User        `json:"user"`
+	SessionType          string           `json:"session_type"`
+	SessionId            string           `json:"session_id"`
+	Relationships        []string         `json:"relationships"`
+	PrivateChannels      []string         `json:"private_channels"`
+	Presences            []string         `json:"presences"`
+	Guilds               []string         `json:"guilds"`
+	GuildJoinRequests    []string         `json:"guild_join_requests"`
+	GeoOrderedRTCRegions []string         `json:"geo_ordered_rtc_regions"`
+	Application          OP_0_Application `json:"application"`
+	Trace                []string         `json:"_trace"`
+}
+
+type OP_0_User struct {
+	Verified      bool   `json:"verified"`
 	Username      string `json:"username"`
-	Fiscriminator string `json:"discriminator"`
+	MFAEnabled    bool   `json:"mfa_enabled"`
+	Id            string `json:"id"`
+	Flags         int32  `json:"flags"`
+	Email         *int32 `json:"email"`
+	Discriminator string `json:"discriminator"`
+	Bot           bool   `json:"bot"`
 	Avatar        string `json:"avatar"`
 }
 
-type Unavailable_Guild struct {
-	Id          string `json:"id"`
-	Unavailable string `json:"unavailable"`
-}
-
-type Application struct {
+type OP_0_Application struct {
 	Id    string `json:"id"`
 	Flags string `json:"flags"`
 }
