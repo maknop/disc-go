@@ -2,8 +2,9 @@
 ---
 name: Run Unit Tests
 
-'on':
+on:
   - pull_request
+  - push
 
 jobs:
 
