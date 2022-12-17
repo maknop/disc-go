@@ -10,17 +10,13 @@ import (
 	"github.com/joho/godotenv"
 )
 
-var (
-	curr_time = time.Now().Format(time.Kitchen)
-)
-
 func LoadEnvVars() error {
 	err := godotenv.Load(".env")
 	if err != nil {
 		return err
 	}
 
-	fmt.Printf("%s: .env file successfully loaded", curr_time)
+	fmt.Printf("%s: .env file successfully loaded", GetCurrTimeUTC())
 
 	return nil
 }
