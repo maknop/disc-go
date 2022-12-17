@@ -13,7 +13,7 @@ import (
 func LoadEnvVars() error {
 	err := godotenv.Load(".env")
 	if err != nil {
-		return err
+		return fmt.Errorf("%s: failed to load .env file: %s", GetCurrTimeUTC(), err)
 	}
 
 	fmt.Printf("%s: .env file successfully loaded", GetCurrTimeUTC())
