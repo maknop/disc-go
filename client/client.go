@@ -8,12 +8,12 @@ import (
 	utils "github.com/maknop/disc-go/utils"
 )
 
+type User struct {
+	auth_token string
+}
+
 func AuthenticateUser() error {
 	ctx := context.Background()
-
-	if err := utils.LoadEnvVars(); err != nil {
-		return fmt.Errorf("%s: there was an error loading .env file: %v", utils.GetCurrTimeUTC(), err)
-	}
 
 	if err := gateway.EstablishConnection(ctx); err != nil {
 		return fmt.Errorf("%s: there was an issue establishing gateway connection: %v", utils.GetCurrTimeUTC(), err)
