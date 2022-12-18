@@ -19,7 +19,5 @@ func AuthenticateUser() error {
 		return fmt.Errorf("%s: there was an issue establishing gateway connection: %v", utils.GetCurrTimeUTC(), err)
 	}
 
-	fmt.Println("Did the thing")
-
 	return nil
 }

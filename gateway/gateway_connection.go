@@ -11,6 +11,7 @@ import (
 	utils "github.com/maknop/disc-go/utils"
 
 	"github.com/gorilla/websocket"
+	logrus "github.com/sirupsen/logrus"
 )
 
 var (
@@ -26,13 +27,13 @@ func EstablishConnection(ctx context.Context) error {
 	connection.EnableWriteCompression(true)
 	connection.SetCompressionLevel(1)
 
-	fmt.Printf("%s: [ OP CODE 10 ] sending initial request to Discord Gateway server", utils.GetCurrTimeUTC())
+	logrus.Infof("%s: [ OP CODE 10 ] sending initial request to Discord Gateway server", utils.GetCurrTimeUTC())
 	heartbeat_interval, sequence_num, err := ReceiveMessage(connection)
 	if err != nil {
 		return fmt.Errorf("%s: [ OP CODE 10 ] could not retrieve heartbeat interval: %s", utils.GetCurrTimeUTC(), err)
 	}
 
-	fmt.Printf("%s: [ OP CODE 10 ] value of heartbeat interval is: %d seconds", utils.GetCurrTimeUTC(), (heartbeat_interval / 1000))
+	logrus.Infof("%s: [ OP CODE 10 ] value of heartbeat interval is: %d seconds", utils.GetCurrTimeUTC(), (heartbeat_interval / 1000))
 
 	// OP 1 Heartbeat
 	if err := SendMessage(connection, sequence_num); err != nil {
@@ -62,7 +63,7 @@ func ReceiveMessage(connection *websocket.Conn) (int, *int, error) {
 		return 0, nil, fmt.Errorf("%s: [ OP CODE 10 ] error receiving message: %s", utils.GetCurrTimeUTC(), err)
 	}
 
-	fmt.Printf("%s: [ OP CODE 10 ] received: %s\n", utils.GetCurrTimeUTC(), msg)
+	logrus.Infof("%s: [ OP CODE 10 ] received: %s\n", utils.GetCurrTimeUTC(), msg)
 
 	var op_10_hello opcodes.OP_10_Hello
 
@@ -84,7 +85,7 @@ func SendMessage(connection *websocket.Conn, sequence_num *int) error {
 		return err
 	}
 
-	fmt.Printf("%s: [ OP CODE 01 ] sending the following payload: {op: %d, d: {Seq: %v}}", utils.GetCurrTimeUTC(), op_1_heartbeat.OP, op_1_heartbeat.D.Sequence)
+	logrus.Info("%s: [ OP CODE 01 ] sending the following payload: {op: %d, d: {Seq: %v}}", utils.GetCurrTimeUTC(), op_1_heartbeat.OP, op_1_heartbeat.D.Sequence)
 
 	return nil
 }
@@ -101,7 +102,7 @@ func ACK(connection *websocket.Conn) error {
 		return fmt.Errorf("%s: [OP CODE 11 ] error parsing json data: %s", utils.GetCurrTimeUTC(), err)
 	}
 
-	fmt.Printf("%s: [ OP CODE 11 ] received: %s\n", utils.GetCurrTimeUTC(), msg)
+	logrus.Info("%s: [ OP CODE 11 ] received: %s\n", utils.GetCurrTimeUTC(), msg)
 
 	return nil
 }
@@ -127,7 +128,7 @@ func Identity(connection *websocket.Conn) error {
 		return fmt.Errorf("%s: error during writing to websocket: %s", utils.GetCurrTimeUTC(), err)
 	}
 
-	fmt.Printf("%s: [ OP CODE 02 ] sending Identity payload", utils.GetCurrTimeUTC())
+	logrus.Info("%s: [ OP CODE 02 ] sending Identity payload", utils.GetCurrTimeUTC())
 
 	return nil
 }
@@ -135,7 +136,7 @@ func Identity(connection *websocket.Conn) error {
 func Ready(connection *websocket.Conn) error {
 	var ready opcodes.OP_0_Ready
 
-	fmt.Printf("%s: [ OP CODE 0 ] reading message returned from server", utils.GetCurrTimeUTC())
+	logrus.Info("%s: [ OP CODE 0 ] reading message returned from server", utils.GetCurrTimeUTC())
 	_, msg, err := connection.ReadMessage()
 	if err != nil {
 		return fmt.Errorf("%s: [ OP CODE 0 ] error receiving message: %s", utils.GetCurrTimeUTC(), err)
@@ -145,7 +146,7 @@ func Ready(connection *websocket.Conn) error {
 		return fmt.Errorf("%s: [ OP CODE 0 ] error parsing json data: %s", utils.GetCurrTimeUTC(), err)
 	}
 
-	fmt.Printf("%s: [ OP CODE 0 ] Received: %s", msg, utils.GetCurrTimeUTC())
+	logrus.Info("%s: [ OP CODE 0 ] Received: %s", msg, utils.GetCurrTimeUTC())
 
 	return nil
 }

@@ -1,11 +1,12 @@
 package utils
 
 import (
-	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
+
+	"github.com/sirupsen/logrus"
 )
 
 func TerminateGracefully() {
@@ -14,7 +15,7 @@ func TerminateGracefully() {
 
 	go func() {
 		<-c
-		fmt.Println("EXITING: Ctrl+C pressed in Terminal")
+		logrus.Info("EXITING: Ctrl+C pressed in Terminal")
 		os.Exit(0)
 	}()
 }
