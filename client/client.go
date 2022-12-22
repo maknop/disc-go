@@ -12,10 +12,10 @@ type User struct {
 	auth_token string
 }
 
-func AuthenticateUser() error {
+func AuthenticateUser(authToken string) error {
 	ctx := context.Background()
 
-	if err := gateway.EstablishConnection(ctx); err != nil {
+	if err := gateway.EstablishConnection(ctx, authToken); err != nil {
 		return fmt.Errorf("%s: there was an issue establishing gateway connection: %v", utils.GetCurrTimeUTC(), err)
 	}
 

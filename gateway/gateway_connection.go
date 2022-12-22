@@ -5,7 +5,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"os"
 
 	opcodes "github.com/maknop/disc-go/types"
 	utils "github.com/maknop/disc-go/utils"
@@ -18,7 +17,7 @@ var (
 	socketUrl = "wss://gateway.discord.gg/?v=9&encoding=json&compress?=true"
 )
 
-func EstablishConnection(ctx context.Context) error {
+func EstablishConnection(ctx context.Context, authToken) error {
 	connection, _, err := websocket.DefaultDialer.DialContext(ctx, socketUrl, nil)
 	if err != nil {
 		return fmt.Errorf("%s: connection could not be established: %s", utils.GetCurrTimeUTC(), err)
@@ -56,9 +55,8 @@ func EstablishConnection(ctx context.Context) error {
 
 	}
 
-	if err := Ready(connection); err != nil {
+	if err := Ready(connection, authToken); err != nil {
 		return fmt.Errorf(fmt.Sprintf("%s: error during Ready: %s", utils.GetCurrTimeUTC(), err))
-
 	}
 
 	return nil
@@ -69,10 +67,6 @@ func ReceiveMessage(connection *websocket.Conn) (int, *int, error) {
 	if err != nil {
 		return 0, nil, fmt.Errorf("%s: [ OP CODE 10 ] error receiving message: %s", utils.GetCurrTimeUTC(), err)
 	}
-
-	logrus.WithFields(logrus.Fields{
-		"op_code": 10,
-	}).Infof("received: %s\n", msg)
 
 	var op_10_hello opcodes.OP_10_Hello
 	if err := json.NewDecoder(bytes.NewReader(msg)).Decode(&op_10_hello); err != nil {
@@ -90,12 +84,8 @@ func SendMessage(connection *websocket.Conn, sequence_num *int) error {
 
 	err := connection.WriteJSON(op_1_heartbeat)
 	if err != nil {
-		return err
+		return fmt.Errorf("%s: [ OP CODE 01 ] error sending message", utils.GetCurrTimeUTC())
 	}
-
-	logrus.WithFields(logrus.Fields{
-		"op_code": 01,
-	}).Info(fmt.Printf("sending the following payload: {op: %d, d: {Seq: %v}}", op_1_heartbeat.OP, op_1_heartbeat.D.Sequence))
 
 	return nil
 }
@@ -112,16 +102,10 @@ func ACK(connection *websocket.Conn) error {
 		return fmt.Errorf("%s: [OP CODE 11 ] error parsing json data: %s", utils.GetCurrTimeUTC(), err)
 	}
 
-	logrus.WithFields(logrus.Fields{
-		"op_code": 11,
-	}).Infof("received: %s\n", msg)
-
 	return nil
 }
 
-func Identity(connection *websocket.Conn) error {
-	auth_token := os.Getenv("AUTH_TOKEN")
-
+func Identity(connection *websocket.Conn, auth_token string) error {
 	op_2_identity := opcodes.OP_2_Identity{
 		OP: 2,
 		D: opcodes.OP_2_Identity_Data{
@@ -162,10 +146,6 @@ func Ready(connection *websocket.Conn) error {
 	if err := json.NewDecoder(bytes.NewReader(msg)).Decode(&ready); err != nil {
 		return fmt.Errorf("%s: [ OP CODE 0 ] error parsing json data: %s", utils.GetCurrTimeUTC(), err)
 	}
-
-	logrus.WithFields(logrus.Fields{
-		"op_code": 0,
-	}).Infof("Received: %s", msg)
 
 	return nil
 }
