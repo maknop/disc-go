@@ -29,8 +29,7 @@ func EstablishConnection(ctx context.Context) error {
 
 	logrus.WithFields(logrus.Fields{
 		"op_code": 10,
-	}).
-		Info("sending initial request to Discord Gateway server")
+	}).Info("sending initial request to Discord Gateway server")
 
 	heartbeat_interval, sequence_num, err := ReceiveMessage(connection)
 	if err != nil {
@@ -39,8 +38,7 @@ func EstablishConnection(ctx context.Context) error {
 
 	logrus.WithFields(logrus.Fields{
 		"op_code": 10,
-	}).
-		Info(fmt.Printf("value of heartbeat interval is: %d seconds", (heartbeat_interval / 1000)))
+	}).Infof("value of heartbeat interval is: %d seconds", (heartbeat_interval / 1000))
 
 	// OP 1 Heartbeat
 	if err := SendMessage(connection, sequence_num); err != nil {
@@ -74,8 +72,7 @@ func ReceiveMessage(connection *websocket.Conn) (int, *int, error) {
 
 	logrus.WithFields(logrus.Fields{
 		"op_code": 10,
-	}).
-		Info(fmt.Printf("received: %s\n", msg))
+	}).Infof("received: %s\n", msg)
 
 	var op_10_hello opcodes.OP_10_Hello
 	if err := json.NewDecoder(bytes.NewReader(msg)).Decode(&op_10_hello); err != nil {
@@ -98,8 +95,7 @@ func SendMessage(connection *websocket.Conn, sequence_num *int) error {
 
 	logrus.WithFields(logrus.Fields{
 		"op_code": 01,
-	}).
-		Info(fmt.Printf("sending the following payload: {op: %d, d: {Seq: %v}}", op_1_heartbeat.OP, op_1_heartbeat.D.Sequence))
+	}).Info(fmt.Printf("sending the following payload: {op: %d, d: {Seq: %v}}", op_1_heartbeat.OP, op_1_heartbeat.D.Sequence))
 
 	return nil
 }
@@ -118,8 +114,7 @@ func ACK(connection *websocket.Conn) error {
 
 	logrus.WithFields(logrus.Fields{
 		"op_code": 11,
-	}).
-		Info(fmt.Printf("received: %s\n", msg))
+	}).Infof("received: %s\n", msg)
 
 	return nil
 }
@@ -145,7 +140,9 @@ func Identity(connection *websocket.Conn) error {
 		return fmt.Errorf("%s: error during writing to websocket: %s", utils.GetCurrTimeUTC(), err)
 	}
 
-	logrus.Println(fmt.Printf("%s: [ OP CODE 02 ] sending Identity payload", utils.GetCurrTimeUTC()))
+	logrus.WithFields(logrus.Fields{
+		"op_code": 2,
+	}).Info("sending Identity payload")
 
 	return nil
 }
@@ -155,8 +152,7 @@ func Ready(connection *websocket.Conn) error {
 
 	logrus.WithFields(logrus.Fields{
 		"op_code": 0,
-	}).
-		Info("reading message returned from server")
+	}).Info("reading message returned from server")
 
 	_, msg, err := connection.ReadMessage()
 	if err != nil {
@@ -169,8 +165,7 @@ func Ready(connection *websocket.Conn) error {
 
 	logrus.WithFields(logrus.Fields{
 		"op_code": 0,
-	}).
-		Info(fmt.Printf("Received: %s", msg))
+	}).Infof("Received: %s", msg)
 
 	return nil
 }
