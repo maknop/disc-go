@@ -17,7 +17,7 @@ var (
 	socketUrl = "wss://gateway.discord.gg/?v=9&encoding=json&compress?=true"
 )
 
-func EstablishConnection(ctx context.Context, authToken) error {
+func EstablishConnection(ctx context.Context, authToken string) error {
 	connection, _, err := websocket.DefaultDialer.DialContext(ctx, socketUrl, nil)
 	if err != nil {
 		return fmt.Errorf("%s: connection could not be established: %s", utils.GetCurrTimeUTC(), err)
@@ -50,12 +50,12 @@ func EstablishConnection(ctx context.Context, authToken) error {
 	}
 
 	// OP 2 Identity
-	if err := Identity(connection); err != nil {
+	if err := Identity(connection, authToken); err != nil {
 		return fmt.Errorf(fmt.Sprintf("%s: error during Identity (OP CODE 02): %s", utils.GetCurrTimeUTC(), err))
 
 	}
 
-	if err := Ready(connection, authToken); err != nil {
+	if err := Ready(connection); err != nil {
 		return fmt.Errorf(fmt.Sprintf("%s: error during Ready: %s", utils.GetCurrTimeUTC(), err))
 	}
 
