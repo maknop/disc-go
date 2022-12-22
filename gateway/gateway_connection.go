@@ -46,15 +46,21 @@ func EstablishConnection(ctx context.Context, authToken string) error {
 		for {
 			select {
 			case <-ticker.C:
-				// OP 1 Send Heartbeat event
+				logrus.WithFields(logrus.Fields{
+					"op_code": 1,
+				}).Info("Sending heartbeat event to gateway")
+
 				if err := SendHeartbeatEvent(connection, sequence_num); err != nil {
-					return fmt.Errorf(fmt.Sprintf("%s: error during writing to websocket: %s", utils.GetCurrTimeUTC(), err))
+					return fmt.Errorf(fmt.Sprintf("%s: error occurred sending heartbeat event: %s", utils.GetCurrTimeUTC(), err))
 				}
 
-				// OP 11 Receive Heartbeat ACK event
 				if err := ReceiveHeartbeatACKEvent(connection); err != nil {
-					return fmt.Errorf(fmt.Sprintf("%s: error during ACK (OP CODE 11): %s", utils.GetCurrTimeUTC(), err))
+					return fmt.Errorf(fmt.Sprintf("%s: error occurred receiving heartbeat ACK event: %s", utils.GetCurrTimeUTC(), err))
 				}
+
+				logrus.WithFields(logrus.Fields{
+					"op_code": 1,
+				}).Info("Received heartbeat ACK event from gateway")
 
 			case <-quit:
 				ticker.Stop()
