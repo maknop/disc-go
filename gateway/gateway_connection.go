@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"time"
 
 	opcodes "github.com/maknop/disc-go/types"
 	utils "github.com/maknop/disc-go/utils"
@@ -14,7 +15,7 @@ import (
 )
 
 var (
-	socketUrl = "wss://gateway.discord.gg/?v=9&encoding=json&compress?=true"
+	socketUrl = "wss://gateway.discord.gg"
 )
 
 func EstablishConnection(ctx context.Context, authToken string) error {
@@ -28,26 +29,39 @@ func EstablishConnection(ctx context.Context, authToken string) error {
 
 	logrus.WithFields(logrus.Fields{
 		"op_code": 10,
-	}).Info("sending initial request to Discord Gateway server")
+	}).Info("sending initial request to gateway")
 
-	heartbeat_interval, sequence_num, err := ReceiveMessage(connection)
+	heartbeat_interval, sequence_num, err := ReceiveHelloEvent(connection)
 	if err != nil {
 		return fmt.Errorf("%s: [ OP CODE 10 ] could not retrieve heartbeat interval: %s", utils.GetCurrTimeUTC(), err)
 	}
 
 	logrus.WithFields(logrus.Fields{
 		"op_code": 10,
-	}).Infof("value of heartbeat interval is: %d seconds", (heartbeat_interval / 1000))
+	}).Infof("received Hello event from gateway")
 
-	// OP 1 Heartbeat
-	if err := SendMessage(connection, sequence_num); err != nil {
-		return fmt.Errorf(fmt.Sprintf("%s: error during writing to websocket: %s", utils.GetCurrTimeUTC(), err))
-	}
+	ticker := time.NewTicker(time.Duration(heartbeat_interval) * time.Second)
+	quit := make(chan struct{})
+	go func() error {
+		for {
+			select {
+			case <-ticker.C:
+				// OP 1 Send Heartbeat event
+				if err := SendHeartbeatEvent(connection, sequence_num); err != nil {
+					return fmt.Errorf(fmt.Sprintf("%s: error during writing to websocket: %s", utils.GetCurrTimeUTC(), err))
+				}
 
-	// OP 11 ACK
-	if err := ACK(connection); err != nil {
-		return fmt.Errorf(fmt.Sprintf("%s: error during ACK (OP CODE 11): %s", utils.GetCurrTimeUTC(), err))
-	}
+				// OP 11 Receive Heartbeat ACK event
+				if err := ReceiveHeartbeatACKEvent(connection); err != nil {
+					return fmt.Errorf(fmt.Sprintf("%s: error during ACK (OP CODE 11): %s", utils.GetCurrTimeUTC(), err))
+				}
+
+			case <-quit:
+				ticker.Stop()
+				return nil
+			}
+		}
+	}()
 
 	// OP 2 Identity
 	if err := Identity(connection, authToken); err != nil {
@@ -62,7 +76,7 @@ func EstablishConnection(ctx context.Context, authToken string) error {
 	return nil
 }
 
-func ReceiveMessage(connection *websocket.Conn) (int, *int, error) {
+func ReceiveHelloEvent(connection *websocket.Conn) (int, *int, error) {
 	_, msg, err := connection.ReadMessage()
 	if err != nil {
 		return 0, nil, fmt.Errorf("%s: [ OP CODE 10 ] error receiving message: %s", utils.GetCurrTimeUTC(), err)
@@ -76,7 +90,7 @@ func ReceiveMessage(connection *websocket.Conn) (int, *int, error) {
 	return op_10_hello.D.Heartbeat_Interval, op_10_hello.S, nil
 }
 
-func SendMessage(connection *websocket.Conn, sequence_num *int) error {
+func SendHeartbeatEvent(connection *websocket.Conn, sequence_num *int) error {
 	op_1_heartbeat := opcodes.OP_1_Heartbeat{
 		OP: 1,
 		D:  opcodes.OP_1_Heartbeat_Data{Sequence: sequence_num},
@@ -90,7 +104,7 @@ func SendMessage(connection *websocket.Conn, sequence_num *int) error {
 	return nil
 }
 
-func ACK(connection *websocket.Conn) error {
+func ReceiveHeartbeatACKEvent(connection *websocket.Conn) error {
 	var op_11_ack opcodes.OP_11_Heartbeat_ACK
 
 	_, msg, err := connection.ReadMessage()
