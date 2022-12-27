@@ -67,8 +67,8 @@ func EstablishConnection(ctx context.Context, authToken string) error {
 
 	ticker := time.NewTicker(time.Duration(heartbeat_interval) * time.Second)
 	quit := make(chan struct{})
-	c := make(chan int)
-	go func(c chan int) {
+
+	go func() error {
 		fmt.Println("Testing goroutine")
 		for {
 			select {
@@ -78,11 +78,11 @@ func EstablishConnection(ctx context.Context, authToken string) error {
 				}).Info("Sending heartbeat event to gateway")
 
 				if err := SendHeartbeatEvent(connection, sequence_num); err != nil {
-					//return fmt.Errorf(fmt.Sprintf("%s: error occurred sending heartbeat event: %s", utils.GetCurrTimeUTC(), err))
+					return fmt.Errorf(fmt.Sprintf("%s: error occurred sending heartbeat event: %s", utils.GetCurrTimeUTC(), err))
 				}
 
 				if err := ReceiveHeartbeatACKEvent(connection); err != nil {
-					//return fmt.Errorf(fmt.Sprintf("%s: error occurred receiving heartbeat ACK event: %s", utils.GetCurrTimeUTC(), err))
+					return fmt.Errorf(fmt.Sprintf("%s: error occurred receiving heartbeat ACK event: %s", utils.GetCurrTimeUTC(), err))
 				}
 
 				logrus.WithFields(logrus.Fields{
@@ -91,7 +91,7 @@ func EstablishConnection(ctx context.Context, authToken string) error {
 
 			case <-quit:
 				ticker.Stop()
-				//return nil
+				return nil
 			}
 		}
 	}()
