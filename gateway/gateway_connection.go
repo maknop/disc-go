@@ -5,6 +5,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"log"
+	"net/http"
 	"time"
 
 	opcodes "github.com/maknop/disc-go/types"
@@ -15,11 +18,32 @@ import (
 )
 
 var (
-	socketUrl = "wss://gateway.discord.gg"
+	url = "https: //discordapp.com/api/gateway"
 )
 
+func getGatewayUrl() (string, error) {
+	resp, err := http.Get(url)
+	if err != nil {
+		return "", fmt.Errorf("could not retrieve gateway url: %s", err)
+	}
+
+	gatewayUrl, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	return string(gatewayUrl), nil
+}
+
 func EstablishConnection(ctx context.Context, authToken string) error {
-	connection, _, err := websocket.DefaultDialer.DialContext(ctx, socketUrl, nil)
+	gatewayUrl, err := getGatewayUrl()
+	if err != nil {
+		logrus.WithFields(logrus.Fields{
+			"op_code": 10,
+		}).Info("error retrieving gateway url")
+	}
+
+	connection, _, err := websocket.DefaultDialer.DialContext(ctx, gatewayUrl, nil)
 	if err != nil {
 		return fmt.Errorf("%s: connection could not be established: %s", utils.GetCurrTimeUTC(), err)
 	}
@@ -42,7 +66,9 @@ func EstablishConnection(ctx context.Context, authToken string) error {
 
 	ticker := time.NewTicker(time.Duration(heartbeat_interval) * time.Second)
 	quit := make(chan struct{})
-	go func() error {
+	c := make(chan int)
+	go func(c chan int) {
+		fmt.Println("Testing goroutine")
 		for {
 			select {
 			case <-ticker.C:
@@ -51,11 +77,11 @@ func EstablishConnection(ctx context.Context, authToken string) error {
 				}).Info("Sending heartbeat event to gateway")
 
 				if err := SendHeartbeatEvent(connection, sequence_num); err != nil {
-					return fmt.Errorf(fmt.Sprintf("%s: error occurred sending heartbeat event: %s", utils.GetCurrTimeUTC(), err))
+					//return fmt.Errorf(fmt.Sprintf("%s: error occurred sending heartbeat event: %s", utils.GetCurrTimeUTC(), err))
 				}
 
 				if err := ReceiveHeartbeatACKEvent(connection); err != nil {
-					return fmt.Errorf(fmt.Sprintf("%s: error occurred receiving heartbeat ACK event: %s", utils.GetCurrTimeUTC(), err))
+					//return fmt.Errorf(fmt.Sprintf("%s: error occurred receiving heartbeat ACK event: %s", utils.GetCurrTimeUTC(), err))
 				}
 
 				logrus.WithFields(logrus.Fields{
@@ -64,7 +90,7 @@ func EstablishConnection(ctx context.Context, authToken string) error {
 
 			case <-quit:
 				ticker.Stop()
-				return nil
+				//return nil
 			}
 		}
 	}()
