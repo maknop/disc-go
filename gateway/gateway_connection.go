@@ -32,8 +32,7 @@ func getGatewayUrl() (string, error) {
 		log.Fatalln(err)
 	}
 
-	fmt.Println(gatewayUrl)
-	return "", nil
+	return string(gatewayUrl), nil
 }
 
 func EstablishConnection(ctx context.Context, authToken string) error {
