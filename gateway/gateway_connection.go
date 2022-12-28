@@ -17,11 +17,9 @@ import (
 	logrus "github.com/sirupsen/logrus"
 )
 
-var (
-	url = "https: //discordapp.com/api/gateway"
-)
-
 func getGatewayUrl() (string, error) {
+	url := "https: //discordapp.com/api/gateway"
+
 	resp, err := http.Get(url)
 	if err != nil {
 		return "", fmt.Errorf("could not retrieve gateway url: %s", err)
@@ -31,6 +29,8 @@ func getGatewayUrl() (string, error) {
 	if err != nil {
 		log.Fatalln(err)
 	}
+
+	fmt.Println(string(gatewayUrl))
 
 	return string(gatewayUrl), nil
 }
