@@ -30,8 +30,6 @@ func getGatewayUrl() (string, error) {
 		log.Fatalln(err)
 	}
 
-	fmt.Println(string(gatewayUrl))
-
 	return string(gatewayUrl), nil
 }
 
@@ -42,6 +40,8 @@ func EstablishConnection(ctx context.Context, authToken string) error {
 			"op_code": 10,
 		}).Info("error retrieving gateway url")
 	}
+
+	fmt.Println(gatewayUrl)
 
 	connection, _, err := websocket.DefaultDialer.DialContext(ctx, gatewayUrl, nil)
 	if err != nil {
