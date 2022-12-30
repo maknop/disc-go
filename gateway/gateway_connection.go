@@ -18,7 +18,7 @@ import (
 )
 
 func getGatewayUrl() (string, error) {
-	url := "https: //discordapp.com/api/gateway"
+	url := "https://discordapp.com/api/gateway"
 
 	resp, err := http.Get(url)
 	if err != nil {
