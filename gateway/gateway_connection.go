@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"time"
 
@@ -17,6 +16,10 @@ import (
 	logrus "github.com/sirupsen/logrus"
 )
 
+type DiscordGateway struct {
+	Url string `json:"url"`
+}
+
 func getGatewayUrl() (string, error) {
 	url := "https://discordapp.com/api/gateway"
 
@@ -25,12 +28,19 @@ func getGatewayUrl() (string, error) {
 		return "", fmt.Errorf("could not retrieve gateway url: %s", err)
 	}
 
-	gatewayUrl, err := ioutil.ReadAll(resp.Body)
+	defer resp.Body.Close()
+
+	respBody, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Fatalln(err)
+		return "", fmt.Errorf("could not retrieve response body from server: %s", err)
 	}
 
-	return string(gatewayUrl[1]), nil
+	var DiscordGateway DiscordGateway
+	if err = json.Unmarshal(respBody, &DiscordGateway); err != nil {
+		return "", fmt.Errorf("error retrieving gateway URL json: %s", err)
+	}
+
+	return DiscordGateway.Url, nil
 }
 
 func EstablishConnection(ctx context.Context, authToken string) error {
