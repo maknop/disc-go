@@ -40,6 +40,10 @@ func getGatewayUrl() (string, error) {
 		return "", fmt.Errorf("error retrieving gateway URL json: %s", err)
 	}
 
+	logrus.WithFields(logrus.Fields{
+		"gateway": DiscordGateway.Url,
+	}).Info("successfully received gateway url from Discord server")
+
 	return DiscordGateway.Url, nil
 }
 
@@ -50,8 +54,6 @@ func EstablishConnection(ctx context.Context, authToken string) error {
 			"op_code": 10,
 		}).Info("error retrieving gateway url")
 	}
-
-	fmt.Println(gatewayUrl)
 
 	connection, _, err := websocket.DefaultDialer.DialContext(ctx, gatewayUrl, nil)
 	if err != nil {
