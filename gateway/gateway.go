@@ -7,8 +7,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"os"
-	"os/signal"
 	"time"
 
 	opcodes "github.com/maknop/disc-go/types"
@@ -52,9 +50,7 @@ func getGatewayUrl() (string, error) {
 func Connect(ctx context.Context, authToken string) error {
 	gatewayUrl, err := getGatewayUrl()
 	if err != nil {
-		logrus.WithFields(logrus.Fields{
-			"op_code": 10,
-		}).Info("error retrieving gateway url")
+		logrus.WithFields(logrus.Fields{"op_code": 10}).Info("error retrieving gateway url")
 	}
 
 	connection, _, err := websocket.DefaultDialer.DialContext(ctx, gatewayUrl, nil)
@@ -65,25 +61,20 @@ func Connect(ctx context.Context, authToken string) error {
 	connection.EnableWriteCompression(true)
 	connection.SetCompressionLevel(1)
 
-	logrus.WithFields(logrus.Fields{
-		"op_code": 10,
-	}).Info("sending initial request to gateway")
+	logrus.WithFields(logrus.Fields{"op_code": 10}).Info("sending initial request to gateway")
 
 	heartbeat_interval, sequence_num, err := ReceiveHelloEvent(connection)
 	if err != nil {
 		return fmt.Errorf("%s: [ OP CODE 10 ] could not retrieve heartbeat interval: %s", utils.GetCurrTimeUTC(), err)
 	}
 
-	logrus.WithFields(logrus.Fields{
-		"op_code": 10,
-	}).Infof("received Hello event from gateway")
+	logrus.WithFields(logrus.Fields{"op_code": 10}).Infof("received Hello event from gateway")
 
 	go HeatbeatInterval(connection, heartbeat_interval, sequence_num)
 
 	// OP 2 Identity
 	if err := Identity(connection, authToken); err != nil {
 		return fmt.Errorf(fmt.Sprintf("%s: error during Identity (OP CODE 02): %s", utils.GetCurrTimeUTC(), err))
-
 	}
 
 	if err := Ready(connection); err != nil {
@@ -97,35 +88,17 @@ func HeatbeatInterval(connection *websocket.Conn, heartbeat_interval int, sequen
 	for {
 		time.Sleep(time.Duration(heartbeat_interval))
 
-		logrus.WithFields(logrus.Fields{
-			"op_code": 1,
-		}).Info("Sending heartbeat event to gateway")
+		logrus.WithFields(logrus.Fields{"op_code": 1}).Info("Sending heartbeat event to gateway")
 
 		if err := SendHeartbeatEvent(connection, sequence_num); err != nil {
 			fmt.Errorf(fmt.Sprintf("%s: error occurred sending heartbeat event: %s", utils.GetCurrTimeUTC(), err))
 		}
 
-		logrus.WithFields(logrus.Fields{
-			"op_code": 1,
-		}).Info("loop")
-
 		if err := ReceiveHeartbeatACKEvent(connection); err != nil {
 			fmt.Errorf(fmt.Sprintf("%s: error occurred receiving heartbeat ACK event: %s", utils.GetCurrTimeUTC(), err))
 		}
 
-		logrus.WithFields(logrus.Fields{
-			"op_code": 1,
-		}).Info("Received heartbeat ACK event from gateway")
-
-		c := make(chan os.Signal, 1)
-		signal.Notify(c, os.Interrupt)
-		go func() {
-			for sig := range c {
-				logrus.WithFields(logrus.Fields{
-					"": sig,
-				}).Info("Received heartbeat ACK event from gateway")
-			}
-		}()
+		logrus.WithFields(logrus.Fields{"op_code": 1}).Info("Received heartbeat ACK event from gateway")
 	}
 }
 
@@ -191,9 +164,7 @@ func Identity(connection *websocket.Conn, auth_token string) error {
 		return fmt.Errorf("%s: error during writing to websocket: %s", utils.GetCurrTimeUTC(), err)
 	}
 
-	logrus.WithFields(logrus.Fields{
-		"op_code": 2,
-	}).Info("sending Identity payload")
+	logrus.WithFields(logrus.Fields{"op_code": 2}).Info("sending Identity payload")
 
 	return nil
 }
@@ -201,9 +172,7 @@ func Identity(connection *websocket.Conn, auth_token string) error {
 func Ready(connection *websocket.Conn) error {
 	var ready opcodes.OP_0_Ready
 
-	logrus.WithFields(logrus.Fields{
-		"op_code": 0,
-	}).Info("reading message returned from server")
+	logrus.WithFields(logrus.Fields{"op_code": 0}).Info("reading message returned from server")
 
 	_, msg, err := connection.ReadMessage()
 	if err != nil {
@@ -213,6 +182,8 @@ func Ready(connection *websocket.Conn) error {
 	if err := json.NewDecoder(bytes.NewReader(msg)).Decode(&ready); err != nil {
 		return fmt.Errorf("%s: [ OP CODE 0 ] error parsing json data: %s", utils.GetCurrTimeUTC(), err)
 	}
+
+	fmt.Println(ready.D.ResumeGatewayUrl)
 
 	return nil
 }
