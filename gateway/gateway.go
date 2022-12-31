@@ -157,13 +157,13 @@ func Ready(connection *websocket.Conn) error {
 		return fmt.Errorf("%s: [ OP CODE 0 ] error receiving message: %s", utils.GetCurrTimeUTC(), err)
 	}
 
-	logrus.WithFields(logrus.Fields{"message": msg, "op_code": 0}).Info("receiving ready event from gateway server")
+	// if err := json.NewDecoder(bytes.NewReader(msg)).Decode(&ready); err != nil {
+	// 	return fmt.Errorf("%s: [ OP CODE 0 ] error parsing json data: %s", utils.GetCurrTimeUTC(), err)
+	// }
 
-	if err := json.NewDecoder(bytes.NewReader(msg)).Decode(&ready); err != nil {
-		return fmt.Errorf("%s: [ OP CODE 0 ] error parsing json data: %s", utils.GetCurrTimeUTC(), err)
-	}
+	err = json.Unmarshal(msg, ready)
 
-	logrus.WithFields(logrus.Fields{"message": ready, "op_code": 0}).Info("decoding ready event")
+	logrus.WithFields(logrus.Fields{"message": ready.D.ResumeGatewayUrl, "op_code": 0}).Info("decoding ready event")
 
 	return nil
 }
