@@ -11,7 +11,7 @@ type User struct {
 	auth_token string
 }
 
-func AuthenticateUser(authToken string) error {
+func Create(authToken string) error {
 	ctx := context.Background()
 
 	if err := gateway.EstablishConnection(ctx, authToken); err != nil {
