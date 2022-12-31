@@ -76,39 +76,7 @@ func Connect(ctx context.Context, authToken string) error {
 		"op_code": 10,
 	}).Infof("received Hello event from gateway")
 
-	ticker := time.NewTicker(time.Duration(heartbeat_interval) * time.Second)
-	quit := make(chan struct{})
-
-	go func() error {
-		for {
-			select {
-			case <-ticker.C:
-				logrus.WithFields(logrus.Fields{
-					"op_code": 1,
-				}).Info("Sending heartbeat event to gateway")
-
-				if err := SendHeartbeatEvent(connection, sequence_num); err != nil {
-					return fmt.Errorf(fmt.Sprintf("%s: error occurred sending heartbeat event: %s", utils.GetCurrTimeUTC(), err))
-				}
-
-				logrus.WithFields(logrus.Fields{
-					"op_code": 1,
-				}).Info("loop")
-
-				if err := ReceiveHeartbeatACKEvent(connection); err != nil {
-					return fmt.Errorf(fmt.Sprintf("%s: error occurred receiving heartbeat ACK event: %s", utils.GetCurrTimeUTC(), err))
-				}
-
-				logrus.WithFields(logrus.Fields{
-					"op_code": 1,
-				}).Info("Received heartbeat ACK event from gateway")
-
-			case <-quit:
-				ticker.Stop()
-				return nil
-			}
-		}
-	}()
+	go HeatbeatInterval(connection, heartbeat_interval, sequence_num)
 
 	// OP 2 Identity
 	if err := Identity(connection, authToken); err != nil {
@@ -121,6 +89,39 @@ func Connect(ctx context.Context, authToken string) error {
 	}
 
 	return nil
+}
+
+func HeatbeatInterval(connection *websocket.Conn, heartbeat_interval int, sequence_num *int) {
+	ticker := time.NewTicker(time.Duration(heartbeat_interval) * time.Second)
+	quit := make(chan struct{})
+
+	for {
+		select {
+		case <-ticker.C:
+			logrus.WithFields(logrus.Fields{
+				"op_code": 1,
+			}).Info("Sending heartbeat event to gateway")
+
+			if err := SendHeartbeatEvent(connection, sequence_num); err != nil {
+				fmt.Errorf(fmt.Sprintf("%s: error occurred sending heartbeat event: %s", utils.GetCurrTimeUTC(), err))
+			}
+
+			logrus.WithFields(logrus.Fields{
+				"op_code": 1,
+			}).Info("loop")
+
+			if err := ReceiveHeartbeatACKEvent(connection); err != nil {
+				fmt.Errorf(fmt.Sprintf("%s: error occurred receiving heartbeat ACK event: %s", utils.GetCurrTimeUTC(), err))
+			}
+
+			logrus.WithFields(logrus.Fields{
+				"op_code": 1,
+			}).Info("Received heartbeat ACK event from gateway")
+
+		case <-quit:
+			ticker.Stop()
+		}
+	}
 }
 
 func ReceiveHelloEvent(connection *websocket.Conn) (int, *int, error) {
