@@ -142,8 +142,6 @@ func Identity(connection *websocket.Conn, auth_token string) error {
 		return fmt.Errorf("%s: error during writing to websocket: %s", utils.GetCurrTimeUTC(), err)
 	}
 
-	logrus.WithFields(logrus.Fields{"op_code": 2, "message": jsonData}).Info("sending Identity payload")
-
 	return nil
 }
 
@@ -160,6 +158,8 @@ func Ready(connection *websocket.Conn) error {
 	if err := json.NewDecoder(bytes.NewReader(msg)).Decode(&ready); err != nil {
 		return fmt.Errorf("%s: [ OP CODE 0 ] error parsing json data: %s", utils.GetCurrTimeUTC(), err)
 	}
+
+	logrus.WithFields(logrus.Fields{"message": ready, "op_code": 2}).Info("receiving ready event from gateway server")
 
 	return nil
 }
