@@ -20,33 +20,6 @@ type DiscordGateway struct {
 	Url string `json:"url"`
 }
 
-func getGatewayUrl() (string, error) {
-	url := "https://discordapp.com/api/gateway"
-
-	resp, err := http.Get(url)
-	if err != nil {
-		return "", fmt.Errorf("could not retrieve gateway url: %s", err)
-	}
-
-	defer resp.Body.Close()
-
-	respBody, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return "", fmt.Errorf("could not retrieve response body from server: %s", err)
-	}
-
-	var DiscordGateway DiscordGateway
-	if err = json.Unmarshal(respBody, &DiscordGateway); err != nil {
-		return "", fmt.Errorf("error retrieving gateway URL json: %s", err)
-	}
-
-	logrus.WithFields(logrus.Fields{
-		"gateway": DiscordGateway.Url,
-	}).Info("successfully received gateway url from Discord server")
-
-	return DiscordGateway.Url, nil
-}
-
 func Connect(ctx context.Context, authToken string) error {
 	gatewayUrl, err := getGatewayUrl()
 	if err != nil {
@@ -159,12 +132,17 @@ func Identity(connection *websocket.Conn, auth_token string) error {
 		},
 	}
 
-	err := connection.WriteJSON(op_2_identity)
+	jsonData, err := json.Marshal(op_2_identity)
+	if err != nil {
+		return fmt.Errorf("%s: error converting object to json: %s", utils.GetCurrTimeUTC(), err)
+	}
+
+	err = connection.WriteMessage(websocket.TextMessage, jsonData)
 	if err != nil {
 		return fmt.Errorf("%s: error during writing to websocket: %s", utils.GetCurrTimeUTC(), err)
 	}
 
-	logrus.WithFields(logrus.Fields{"op_code": 2}).Info("sending Identity payload")
+	logrus.WithFields(logrus.Fields{"op_code": 2, "message": jsonData}).Info("sending Identity payload")
 
 	return nil
 }
@@ -183,7 +161,30 @@ func Ready(connection *websocket.Conn) error {
 		return fmt.Errorf("%s: [ OP CODE 0 ] error parsing json data: %s", utils.GetCurrTimeUTC(), err)
 	}
 
-	logrus.WithFields(logrus.Fields{"resume_url": ready.D.ResumeGatewayUrl}).Info("received resume payload")
-
 	return nil
+}
+
+func getGatewayUrl() (string, error) {
+	url := "https://discordapp.com/api/gateway"
+
+	resp, err := http.Get(url)
+	if err != nil {
+		return "", fmt.Errorf("could not retrieve gateway url: %s", err)
+	}
+
+	defer resp.Body.Close()
+
+	respBody, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return "", fmt.Errorf("could not retrieve response body from server: %s", err)
+	}
+
+	var DiscordGateway DiscordGateway
+	if err = json.Unmarshal(respBody, &DiscordGateway); err != nil {
+		return "", fmt.Errorf("error retrieving gateway URL json: %s", err)
+	}
+
+	logrus.WithFields(logrus.Fields{"gateway": DiscordGateway.Url}).Info("successfully received gateway url from Discord server")
+
+	return DiscordGateway.Url, nil
 }
