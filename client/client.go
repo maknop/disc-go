@@ -14,7 +14,7 @@ type User struct {
 func Create(authToken string) error {
 	ctx := context.Background()
 
-	if err := gateway.EstablishConnection(ctx, authToken); err != nil {
+	if err := gateway.Connect(ctx, authToken); err != nil {
 		return fmt.Errorf("there was an issue establishing gateway connection: %v", err)
 	}
 

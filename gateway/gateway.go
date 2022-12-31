@@ -47,7 +47,7 @@ func getGatewayUrl() (string, error) {
 	return DiscordGateway.Url, nil
 }
 
-func EstablishConnection(ctx context.Context, authToken string) error {
+func Connect(ctx context.Context, authToken string) error {
 	gatewayUrl, err := getGatewayUrl()
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
@@ -80,7 +80,6 @@ func EstablishConnection(ctx context.Context, authToken string) error {
 	quit := make(chan struct{})
 
 	go func() error {
-		fmt.Println("Testing goroutine")
 		for {
 			select {
 			case <-ticker.C:
@@ -91,6 +90,8 @@ func EstablishConnection(ctx context.Context, authToken string) error {
 				if err := SendHeartbeatEvent(connection, sequence_num); err != nil {
 					return fmt.Errorf(fmt.Sprintf("%s: error occurred sending heartbeat event: %s", utils.GetCurrTimeUTC(), err))
 				}
+
+				fmt.Println("Testing goroutine")
 
 				if err := ReceiveHeartbeatACKEvent(connection); err != nil {
 					return fmt.Errorf(fmt.Sprintf("%s: error occurred receiving heartbeat ACK event: %s", utils.GetCurrTimeUTC(), err))
