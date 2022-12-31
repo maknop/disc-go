@@ -91,7 +91,9 @@ func Connect(ctx context.Context, authToken string) error {
 					return fmt.Errorf(fmt.Sprintf("%s: error occurred sending heartbeat event: %s", utils.GetCurrTimeUTC(), err))
 				}
 
-				fmt.Println("Testing goroutine")
+				logrus.WithFields(logrus.Fields{
+					"op_code": 1,
+				}).Info("loop")
 
 				if err := ReceiveHeartbeatACKEvent(connection); err != nil {
 					return fmt.Errorf(fmt.Sprintf("%s: error occurred receiving heartbeat ACK event: %s", utils.GetCurrTimeUTC(), err))
