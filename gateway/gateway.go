@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"time"
 
 	opcodes "github.com/maknop/disc-go/types"
 	utils "github.com/maknop/disc-go/utils"
@@ -91,12 +92,9 @@ func Connect(ctx context.Context, authToken string) error {
 }
 
 func HeatbeatInterval(connection *websocket.Conn, heartbeat_interval int, sequence_num *int) {
-	//ticker := time.NewTicker(time.Duration(heartbeat_interval) * time.Second)
-	//quit := make(chan struct{})
-
 	for {
-		//select {
-		//case <-ticker.C:
+		time.Sleep(time.Duration(heartbeat_interval))
+
 		logrus.WithFields(logrus.Fields{
 			"op_code": 1,
 		}).Info("Sending heartbeat event to gateway")
@@ -116,10 +114,6 @@ func HeatbeatInterval(connection *websocket.Conn, heartbeat_interval int, sequen
 		logrus.WithFields(logrus.Fields{
 			"op_code": 1,
 		}).Info("Received heartbeat ACK event from gateway")
-
-		//case <-quit:
-		//	ticker.Stop()
-		//}
 	}
 }
 
