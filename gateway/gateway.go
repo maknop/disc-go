@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"time"
 
 	opcodes "github.com/maknop/disc-go/types"
 	utils "github.com/maknop/disc-go/utils"
@@ -92,35 +91,35 @@ func Connect(ctx context.Context, authToken string) error {
 }
 
 func HeatbeatInterval(connection *websocket.Conn, heartbeat_interval int, sequence_num *int) {
-	ticker := time.NewTicker(time.Duration(heartbeat_interval) * time.Second)
-	quit := make(chan struct{})
+	//ticker := time.NewTicker(time.Duration(heartbeat_interval) * time.Second)
+	//quit := make(chan struct{})
 
 	for {
-		select {
-		case <-ticker.C:
-			logrus.WithFields(logrus.Fields{
-				"op_code": 1,
-			}).Info("Sending heartbeat event to gateway")
+		//select {
+		//case <-ticker.C:
+		logrus.WithFields(logrus.Fields{
+			"op_code": 1,
+		}).Info("Sending heartbeat event to gateway")
 
-			if err := SendHeartbeatEvent(connection, sequence_num); err != nil {
-				fmt.Errorf(fmt.Sprintf("%s: error occurred sending heartbeat event: %s", utils.GetCurrTimeUTC(), err))
-			}
-
-			logrus.WithFields(logrus.Fields{
-				"op_code": 1,
-			}).Info("loop")
-
-			if err := ReceiveHeartbeatACKEvent(connection); err != nil {
-				fmt.Errorf(fmt.Sprintf("%s: error occurred receiving heartbeat ACK event: %s", utils.GetCurrTimeUTC(), err))
-			}
-
-			logrus.WithFields(logrus.Fields{
-				"op_code": 1,
-			}).Info("Received heartbeat ACK event from gateway")
-
-		case <-quit:
-			ticker.Stop()
+		if err := SendHeartbeatEvent(connection, sequence_num); err != nil {
+			fmt.Errorf(fmt.Sprintf("%s: error occurred sending heartbeat event: %s", utils.GetCurrTimeUTC(), err))
 		}
+
+		logrus.WithFields(logrus.Fields{
+			"op_code": 1,
+		}).Info("loop")
+
+		if err := ReceiveHeartbeatACKEvent(connection); err != nil {
+			fmt.Errorf(fmt.Sprintf("%s: error occurred receiving heartbeat ACK event: %s", utils.GetCurrTimeUTC(), err))
+		}
+
+		logrus.WithFields(logrus.Fields{
+			"op_code": 1,
+		}).Info("Received heartbeat ACK event from gateway")
+
+		//case <-quit:
+		//	ticker.Stop()
+		//}
 	}
 }
 
