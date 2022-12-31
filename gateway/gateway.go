@@ -16,8 +16,9 @@ import (
 	logrus "github.com/sirupsen/logrus"
 )
 
-type DiscordGateway struct {
+type GatewayConnection struct {
 	Url string `json:"url"`
+	//Conn *websocket.Conn
 }
 
 func Connect(ctx context.Context, authToken string) error {
@@ -137,6 +138,7 @@ func Identity(connection *websocket.Conn, auth_token string) error {
 		return fmt.Errorf("%s: error converting object to json: %s", utils.GetCurrTimeUTC(), err)
 	}
 
+	logrus.WithFields(logrus.Fields{"op_code": 2}).Info("sending ready event to gateway server")
 	err = connection.WriteMessage(websocket.TextMessage, jsonData)
 	if err != nil {
 		return fmt.Errorf("%s: error during writing to websocket: %s", utils.GetCurrTimeUTC(), err)
@@ -155,11 +157,13 @@ func Ready(connection *websocket.Conn) error {
 		return fmt.Errorf("%s: [ OP CODE 0 ] error receiving message: %s", utils.GetCurrTimeUTC(), err)
 	}
 
+	logrus.WithFields(logrus.Fields{"message": msg, "op_code": 0}).Info("receiving ready event from gateway server")
+
 	if err := json.NewDecoder(bytes.NewReader(msg)).Decode(&ready); err != nil {
 		return fmt.Errorf("%s: [ OP CODE 0 ] error parsing json data: %s", utils.GetCurrTimeUTC(), err)
 	}
 
-	logrus.WithFields(logrus.Fields{"message": ready, "op_code": 2}).Info("receiving ready event from gateway server")
+	logrus.WithFields(logrus.Fields{"message": ready, "op_code": 0}).Info("decoding ready event")
 
 	return nil
 }
@@ -179,7 +183,7 @@ func getGatewayUrl() (string, error) {
 		return "", fmt.Errorf("could not retrieve response body from server: %s", err)
 	}
 
-	var DiscordGateway DiscordGateway
+	var DiscordGateway GatewayConnection
 	if err = json.Unmarshal(respBody, &DiscordGateway); err != nil {
 		return "", fmt.Errorf("error retrieving gateway URL json: %s", err)
 	}
