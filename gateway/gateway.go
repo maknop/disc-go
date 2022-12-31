@@ -183,7 +183,7 @@ func Ready(connection *websocket.Conn) error {
 		return fmt.Errorf("%s: [ OP CODE 0 ] error parsing json data: %s", utils.GetCurrTimeUTC(), err)
 	}
 
-	fmt.Println(ready.D.ResumeGatewayUrl)
+	logrus.WithFields(logrus.Fields{"resume_url": ready.D.ResumeGatewayUrl}).Info("received resume payload")
 
 	return nil
 }
