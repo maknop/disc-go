@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"os"
+	"os/signal"
 	"time"
 
 	opcodes "github.com/maknop/disc-go/types"
@@ -114,6 +116,16 @@ func HeatbeatInterval(connection *websocket.Conn, heartbeat_interval int, sequen
 		logrus.WithFields(logrus.Fields{
 			"op_code": 1,
 		}).Info("Received heartbeat ACK event from gateway")
+
+		c := make(chan os.Signal, 1)
+		signal.Notify(c, os.Interrupt)
+		go func() {
+			for sig := range c {
+				logrus.WithFields(logrus.Fields{
+					"": sig,
+				}).Info("Received heartbeat ACK event from gateway")
+			}
+		}()
 	}
 }
 
