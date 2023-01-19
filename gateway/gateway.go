@@ -37,6 +37,8 @@ func Connect(ctx context.Context, authToken string) error {
 	c.conn.SetCompressionLevel(1)
 
 	log.Fatal(http.ListenAndServe(*addr, nil))
+
+	return nil
 }
 
 func getGatewayUrl() (string, error) {
