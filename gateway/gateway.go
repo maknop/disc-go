@@ -27,6 +27,7 @@ func Connect(ctx context.Context, authToken string) error {
 		logrus.WithFields(logrus.Fields{"op_code": 10}).Info("error retrieving gateway url")
 	}
 
+	logrus.WithFields(logrus.Fields{"op_code": 10}).Info("sending initial request to gateway")
 	connection, _, err := websocket.DefaultDialer.DialContext(ctx, gatewayUrl, nil)
 	if err != nil {
 		return fmt.Errorf("%s: connection could not be established: %s", utils.GetCurrTimeUTC(), err)
@@ -35,8 +36,6 @@ func Connect(ctx context.Context, authToken string) error {
 	connection.EnableWriteCompression(true)
 	connection.SetCompressionLevel(1)
 
-	logrus.WithFields(logrus.Fields{"op_code": 10}).Info("sending initial request to gateway")
-
 	heartbeat_interval, sequence_num, err := ReceiveHelloEvent(connection)
 	if err != nil {
 		return fmt.Errorf("%s: [ OP CODE 10 ] could not retrieve heartbeat interval: %s", utils.GetCurrTimeUTC(), err)
@@ -44,7 +43,7 @@ func Connect(ctx context.Context, authToken string) error {
 
 	logrus.WithFields(logrus.Fields{"op_code": 10}).Infof("received Hello event from gateway")
 
-	go HeatbeatInterval(connection, heartbeat_interval, sequence_num)
+	HeatbeatInterval(connection, heartbeat_interval, sequence_num)
 
 	// OP 2 Identity
 	if err := Identity(connection, authToken); err != nil {
