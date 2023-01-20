@@ -20,8 +20,6 @@ type Client struct {
 	Send chan []byte
 }
 
-var addr = flag.String("addr", "localhost:8080", "http service address")
-
 func Connect(ctx context.Context, authToken string) error {
 	wsUrl, err := getGatewayUrl()
 	if err != nil {
