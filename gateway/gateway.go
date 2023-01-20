@@ -8,8 +8,8 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/gorilla/websocket"
 	logrus "github.com/sirupsen/logrus"
+	"golang.org/x/net/websocket"
 )
 
 type Client struct {
@@ -24,13 +24,14 @@ func Connect(ctx context.Context, authToken string) error {
 		logrus.WithFields(logrus.Fields{"op_code": 10}).Info("error retrieving gateway url")
 	}
 
-	c, _, err := websocket.DefaultDialer.Dial(wsUrl, nil)
+	logrus.WithFields(logrus.Fields{"op_code": 10}).Info("sending initial request to server")
+	origin := "http://localhost/"
+	url := wsUrl
+	c, err := websocket.Dial(url, "", origin)
 	if err != nil {
-		log.Fatal("dial:", err)
+		log.Fatal(err)
 	}
 	defer c.Close()
-
-	logrus.WithFields(logrus.Fields{"op_code": 10}).Info("sending initial request to server")
 
 	//c.Conn.EnableWriteCompression(true)
 	//c.Conn.SetCompressionLevel(1)
