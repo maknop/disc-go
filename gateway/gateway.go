@@ -5,11 +5,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 
+	"github.com/gorilla/websocket"
 	logrus "github.com/sirupsen/logrus"
-	"golang.org/x/net/websocket"
 )
 
 type Client struct {
@@ -25,11 +24,10 @@ func Connect(ctx context.Context, authToken string) error {
 	}
 
 	logrus.WithFields(logrus.Fields{"op_code": 10}).Info("sending initial request to server")
-	origin := "http://localhost/"
-	url := wsUrl
-	c, err := websocket.Dial(url, "", origin)
+
+	c, _, err := websocket.DefaultDialer.Dial(wsUrl, nil)
 	if err != nil {
-		log.Fatal(err)
+		return fmt.Errorf("An error occurred dialing the websocket server")
 	}
 	defer c.Close()
 
