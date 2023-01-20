@@ -6,14 +6,12 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
+	"net/url"
 
 	"github.com/gorilla/websocket"
 	logrus "github.com/sirupsen/logrus"
-)
-
-var (
-	addr = flag.String("addr", "127.0.0.1:8080", "http service address")
 )
 
 type Client struct {
@@ -22,18 +20,29 @@ type Client struct {
 	Send chan []byte
 }
 
+var addr = flag.String("addr", "localhost:8080", "http service address")
+
 func Connect(ctx context.Context, authToken string) error {
-	c := Client{}
+	wsUrl, err := getGatewayUrl()
+	if err != nil {
+		logrus.WithFields(logrus.Fields{"op_code": 10}).Info("error retrieving gateway url")
+	}
 
-	// gatewayUrl, err := getGatewayUrl()
-	// if err != nil {
-	// 	logrus.WithFields(logrus.Fields{"op_code": 10}).Info("error retrieving gateway url")
-	// }
+	addr := flag.String("addr", wsUrl, "http service address")
 
-	logrus.WithFields(logrus.Fields{"op_code": 10}).Info("sending initial request to gateway")
+	u := url.URL{Scheme: "ws", Host: *addr, Path: "/"}
+	log.Printf("connecting to %s", u.String())
 
-	c.Conn.EnableWriteCompression(true)
-	c.Conn.SetCompressionLevel(1)
+	c, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
+	if err != nil {
+		log.Fatal("dial:", err)
+	}
+	defer c.Close()
+
+	logrus.WithFields(logrus.Fields{"op_code": 10}).Info("sending initial request to server")
+
+	//c.Conn.EnableWriteCompression(true)
+	//c.Conn.SetCompressionLevel(1)
 
 	logrus.Info(http.ListenAndServe(*addr, nil))
 
