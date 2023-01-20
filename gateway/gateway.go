@@ -18,9 +18,9 @@ var (
 )
 
 type Client struct {
-	url  string `json:"url"`
-	conn *websocket.Conn
-	send chan []byte
+	Url  string `json:"url"`
+	Conn *websocket.Conn
+	Send chan []byte
 }
 
 func Connect(ctx context.Context, authToken string) error {
@@ -33,8 +33,8 @@ func Connect(ctx context.Context, authToken string) error {
 
 	logrus.WithFields(logrus.Fields{"op_code": 10}).Info("sending initial request to gateway")
 
-	c.conn.EnableWriteCompression(true)
-	c.conn.SetCompressionLevel(1)
+	c.Conn.EnableWriteCompression(true)
+	c.Conn.SetCompressionLevel(1)
 
 	log.Fatal(http.ListenAndServe(*addr, nil))
 
@@ -63,5 +63,5 @@ func getGatewayUrl() (string, error) {
 
 	logrus.WithFields(logrus.Fields{"gateway": DiscordGateway.Url}).Info("successfully received gateway url from Discord server")
 
-	return DiscordGateway.url, nil
+	return DiscordGateway.Url, nil
 }
