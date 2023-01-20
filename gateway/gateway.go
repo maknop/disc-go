@@ -6,7 +6,6 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 
 	"github.com/gorilla/websocket"
@@ -36,7 +35,7 @@ func Connect(ctx context.Context, authToken string) error {
 	c.Conn.EnableWriteCompression(true)
 	c.Conn.SetCompressionLevel(1)
 
-	log.Fatal(http.ListenAndServe(*addr, nil))
+	logrus.Info(http.ListenAndServe(*addr, nil))
 
 	return nil
 }
