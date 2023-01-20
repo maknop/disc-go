@@ -3,12 +3,10 @@ package gateway
 import (
 	"context"
 	"encoding/json"
-	"flag"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
-	"net/url"
 
 	"github.com/gorilla/websocket"
 	logrus "github.com/sirupsen/logrus"
@@ -26,12 +24,7 @@ func Connect(ctx context.Context, authToken string) error {
 		logrus.WithFields(logrus.Fields{"op_code": 10}).Info("error retrieving gateway url")
 	}
 
-	addr := flag.String("addr", wsUrl, "http service address")
-
-	u := url.URL{Scheme: "ws", Host: *addr, Path: "/"}
-	log.Printf("connecting to %s", u.String())
-
-	c, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
+	c, _, err := websocket.DefaultDialer.Dial(wsUrl, nil)
 	if err != nil {
 		log.Fatal("dial:", err)
 	}
@@ -41,8 +34,6 @@ func Connect(ctx context.Context, authToken string) error {
 
 	//c.Conn.EnableWriteCompression(true)
 	//c.Conn.SetCompressionLevel(1)
-
-	logrus.Info(http.ListenAndServe(*addr, nil))
 
 	return nil
 }
