@@ -25,16 +25,32 @@ func Connect(ctx context.Context, authToken string) error {
 
 	logrus.WithFields(logrus.Fields{"op_code": 10}).Info("sending initial request to server")
 
-	c, _, err := websocket.DefaultDialer.Dial(wsUrl, nil)
+	connection, _, err := websocket.DefaultDialer.Dial(wsUrl, nil)
 	if err != nil {
 		return fmt.Errorf("An error occurred dialing the websocket server")
 	}
-	defer c.Close()
+	defer connection.Close()
 
-	//c.Conn.EnableWriteCompression(true)
-	//c.Conn.SetCompressionLevel(1)
+	channel := make(chan []byte)
+
+	c := Client{
+		Url:  wsUrl,
+		Conn: connection,
+		Send: channel,
+	}
+
+	c.Conn.EnableWriteCompression(true)
+	c.Conn.SetCompressionLevel(1)
 
 	return nil
+}
+
+func (c Client) readMessage() {
+
+}
+
+func (c Client) writeMessage() {
+
 }
 
 func getGatewayUrl() (string, error) {
