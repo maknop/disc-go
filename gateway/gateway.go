@@ -32,13 +32,13 @@ func Connect(ctx context.Context, authToken string) error {
 	}
 	defer connection.Close()
 
-	channel := make(chan []byte)
+	// channel := make(chan []byte)
 
-	c := Client{
-		Url:  wsUrl,
-		Conn: connection,
-		Send: channel,
-	}
+	// c := Client{
+	// 	Url:  wsUrl,
+	// 	Conn: connection,
+	// 	Send: channel,
+	// }
 
 	_, p, err := connection.ReadMessage()
 	if err != nil {
@@ -50,7 +50,7 @@ func Connect(ctx context.Context, authToken string) error {
 		return fmt.Errorf("error unmarshaling data: %w", err)
 	}
 
-	fmt.Printf("Message received: %s", HelloEvent.OP)
+	fmt.Printf("Message received: %v", HelloEvent.OP)
 
 	return nil
 }
