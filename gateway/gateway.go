@@ -24,12 +24,13 @@ func Connect(ctx context.Context, authToken string) error {
 	}
 
 	logrus.WithFields(logrus.Fields{"op_code": 10}).Info("sending initial request to server")
-
 	connection, _, err := websocket.DefaultDialer.Dial(wsUrl, nil)
 	if err != nil {
 		return fmt.Errorf("An error occurred dialing the websocket server")
 	}
 	defer connection.Close()
+
+	fmt.Printf("Message received: %v", connection)
 
 	channel := make(chan []byte)
 
