@@ -72,10 +72,10 @@ type OP_9_Invalid_Session struct {
 }
 
 type OP_10_Hello struct {
+	T  *string          `json:"t"`
+	S  *int             `json:"s"`
 	OP *int             `json:"op"`
 	D  OP_10_Hello_Data `json:"d"`
-	S  *int             `json:"s"`
-	T  *string          `json:"t"`
 }
 
 type OP_10_Hello_Data struct {

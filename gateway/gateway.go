@@ -9,6 +9,8 @@ import (
 
 	"github.com/gorilla/websocket"
 	logrus "github.com/sirupsen/logrus"
+
+	opcodes "github.com/maknop/disc-go/types"
 )
 
 type Client struct {
@@ -26,12 +28,9 @@ func Connect(ctx context.Context, authToken string) error {
 	logrus.WithFields(logrus.Fields{"op_code": 10}).Info("sending initial request to server")
 	connection, _, err := websocket.DefaultDialer.Dial(wsUrl, nil)
 	if err != nil {
-		return fmt.Errorf("An error occurred dialing the websocket server")
+		return fmt.Errorf("An error occurred dialing the websocket server: %w", err)
 	}
 	defer connection.Close()
-
-	_, p, _ := connection.ReadMessage()
-	fmt.Printf("Message received: %v", string(p))
 
 	channel := make(chan []byte)
 
@@ -41,8 +40,17 @@ func Connect(ctx context.Context, authToken string) error {
 		Send: channel,
 	}
 
-	c.Conn.EnableWriteCompression(true)
-	c.Conn.SetCompressionLevel(1)
+	_, p, err := connection.ReadMessage()
+	if err != nil {
+		return fmt.Errorf("There was an error reading the message: %w", err)
+	}
+
+	var HelloEvent opcodes.OP_10_Hello
+	if err = json.Unmarshal(p, &HelloEvent); err != nil {
+		return fmt.Errorf("error unmarshaling data: %w", err)
+	}
+
+	fmt.Printf("Message received: %s", HelloEvent.OP)
 
 	return nil
 }
@@ -52,7 +60,7 @@ func getGatewayUrl() (string, error) {
 
 	resp, err := http.Get(url)
 	if err != nil {
-		return "", fmt.Errorf("could not retrieve gateway url: %s", err)
+		return "", fmt.Errorf("could not retrieve gateway url: %w", err)
 	}
 
 	defer resp.Body.Close()
@@ -64,10 +72,16 @@ func getGatewayUrl() (string, error) {
 
 	var DiscordGateway Client
 	if err = json.Unmarshal(respBody, &DiscordGateway); err != nil {
-		return "", fmt.Errorf("error retrieving gateway URL json: %s", err)
+		return "", fmt.Errorf("error retrieving gateway URL json: %w", err)
 	}
 
 	logrus.WithFields(logrus.Fields{"gateway": DiscordGateway.Url}).Info("successfully received gateway url from Discord server")
 
 	return DiscordGateway.Url, nil
 }
+
+// func startHeartbeatInterval(heatbeatValue int) {
+// 	while (true) {
+
+// 	}
+// }
