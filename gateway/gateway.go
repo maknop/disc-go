@@ -30,8 +30,8 @@ func Connect(ctx context.Context, authToken string) error {
 	}
 	defer connection.Close()
 
-	msg, _, _ := connection.ReadMessage()
-	fmt.Printf("Message received: %v", msg)
+	_, p, _ := connection.ReadMessage()
+	fmt.Printf("Message received: %v", p)
 
 	channel := make(chan []byte)
 
