@@ -50,7 +50,8 @@ func Connect(ctx context.Context, authToken string) error {
 		return fmt.Errorf("error unmarshaling data: %w", err)
 	}
 
-	fmt.Printf("Message received: %d", HelloEvent.OP)
+	fmt.Printf("Message received: %v", string(p))
+	fmt.Printf("Heartbeat Interval: %d", *HelloEvent.OP)
 
 	return nil
 }
