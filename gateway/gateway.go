@@ -30,7 +30,8 @@ func Connect(ctx context.Context, authToken string) error {
 	}
 	defer connection.Close()
 
-	fmt.Printf("Message received: %v", connection)
+	msg, _, _ := connection.ReadMessage()
+	fmt.Printf("Message received: %v", msg)
 
 	channel := make(chan []byte)
 
@@ -44,14 +45,6 @@ func Connect(ctx context.Context, authToken string) error {
 	c.Conn.SetCompressionLevel(1)
 
 	return nil
-}
-
-func (c Client) readMessage() {
-
-}
-
-func (c Client) writeMessage() {
-
 }
 
 func getGatewayUrl() (string, error) {
