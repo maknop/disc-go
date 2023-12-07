@@ -4,9 +4,20 @@ import (
 	"context"
 	"fmt"
 
+	client "github.com/maknop/disc-go/client"
+	log "github.com/sirupsen/logrus"
+
 	gateway "github.com/maknop/disc-go/gateway"
 	utils "github.com/maknop/disc-go/utils"
 )
+
+func Start() {
+	fmt.Print("attempting to authenticate user")
+
+	if err := client.AuthenticateUser(); err != nil {
+		log.Fatal("failed to authenticate user")
+	}
+}
 
 func AuthenticateUser() error {
 	ctx := context.Background()
