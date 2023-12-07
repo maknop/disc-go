@@ -11,11 +11,14 @@ import (
 )
 
 func Start() error {
-	fmt.Print("attempting to authenticate user")
+	customFormatter := new(log.TextFormatter)
+	customFormatter.TimestampFormat = "2006-01-02 15:04:05"
+	log.SetFormatter(customFormatter)
+	customFormatter.FullTimestamp = true
 
+	log.Info("attempting to authenticate user")
 	if err := AuthenticateUser(); err != nil {
-		log.Fatal("failed to authenticate user")
-		return err
+		return fmt.Errorf("failed to authenticate user")
 	}
 
 	return nil
@@ -25,14 +28,14 @@ func AuthenticateUser() error {
 	ctx := context.Background()
 
 	if err := utils.LoadEnvVars(); err != nil {
-		return fmt.Errorf("%s: there was an error loading .env file: %v", utils.GetCurrTimeUTC(), err)
+		log.Fatalf("there was an error loading .env file: %v", err)
 	}
 
 	if err := gateway.EstablishConnection(ctx); err != nil {
-		return fmt.Errorf("%s: there was an issue establishing gateway connection: %v", utils.GetCurrTimeUTC(), err)
+		return fmt.Errorf("there was an issue establishing gateway connection: %v", err)
 	}
 
-	fmt.Println("Did the thing")
+	log.Info("authentication was successful to the gateway")
 
 	return nil
 }

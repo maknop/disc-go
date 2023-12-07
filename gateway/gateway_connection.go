@@ -22,23 +22,23 @@ func EstablishConnection(ctx context.Context) error {
 	log.Info("Establishing connection...")
 	connection, _, err := websocket.DefaultDialer.DialContext(ctx, socketURL, nil)
 	if err != nil {
-		return fmt.Errorf("%s: connection could not be established: %s", utils.GetCurrTimeUTC(), err)
+		return fmt.Errorf("connection could not be established: %s", err)
 	}
 
 	connection.EnableWriteCompression(true)
 	connection.SetCompressionLevel(1)
 
-	fmt.Printf("%s: [ OP CODE 10 ] sending initial request to Discord Gateway server", utils.GetCurrTimeUTC())
+	fmt.Printf("[ OP CODE 10 ] sending initial request to Discord Gateway server", utils.GetCurrTimeUTC())
 	heartbeatInterval, sequenceNum, err := ReceiveMessage(connection)
 	if err != nil {
-		return fmt.Errorf("%s: [ OP CODE 10 ] could not retrieve heartbeat interval: %s", utils.GetCurrTimeUTC(), err)
+		return fmt.Errorf("[ OP CODE 10 ] could not retrieve heartbeat interval: %s", err)
 	}
 
-	fmt.Printf("%s: [ OP CODE 10 ] value of heartbeat interval is: %d seconds", utils.GetCurrTimeUTC(), (heartbeatInterval / 1000))
+	fmt.Printf("[ OP CODE 10 ] value of heartbeat interval is: %d seconds", (heartbeatInterval / 1000))
 
 	// OP 1 Heartbeat
 	if err := SendMessage(connection, sequenceNum); err != nil {
-		return fmt.Errorf(fmt.Sprintf("%s: error during writing to websocket: %s", utils.GetCurrTimeUTC(), err))
+		return fmt.Errorf(fmt.Sprintf("error during writing to websocket: %s", err))
 	}
 
 	// OP 11 ACK
@@ -61,15 +61,15 @@ func EstablishConnection(ctx context.Context) error {
 func ReceiveMessage(connection *websocket.Conn) (int, *int, error) {
 	_, msg, err := connection.ReadMessage()
 	if err != nil {
-		return 0, nil, fmt.Errorf("%s: [ OP CODE 10 ] error receiving message: %s", utils.GetCurrTimeUTC(), err)
+		return 0, nil, fmt.Errorf("[ OP CODE 10 ] error receiving message: %s", err)
 	}
 
-	fmt.Printf("%s: [ OP CODE 10 ] received: %s\n", utils.GetCurrTimeUTC(), msg)
+	fmt.Printf("[ OP CODE 10 ] received: %s\n", msg)
 
 	var OP10Hello opcodes.OP10Hello
 
 	if err := json.NewDecoder(bytes.NewReader(msg)).Decode(&OP10Hello); err != nil {
-		return 0, nil, fmt.Errorf("%s: [ OP CODE 10 ] error parsing json data: %s", utils.GetCurrTimeUTC(), err)
+		return 0, nil, fmt.Errorf("[ OP CODE 10 ] error parsing json data: %s", err)
 	}
 
 	return OP10Hello.D.HeartbeatInterval, OP10Hello.S, nil
@@ -86,7 +86,7 @@ func SendMessage(connection *websocket.Conn, sequenceNum *int) error {
 		return err
 	}
 
-	fmt.Printf("%s: [ OP CODE 01 ] sending the following payload: {op: %d, d: {Seq: %v}}", utils.GetCurrTimeUTC(), op1Heartbeat.OP, op1Heartbeat.D.Sequence)
+	fmt.Printf("[ OP CODE 01 ] sending the following payload: {op: %d, d: {Seq: %v}}", op1Heartbeat.OP, op1Heartbeat.D.Sequence)
 
 	return nil
 }
@@ -96,14 +96,14 @@ func ACK(connection *websocket.Conn) error {
 
 	_, msg, err := connection.ReadMessage()
 	if err != nil {
-		return fmt.Errorf("%s: [ OP CODE 11 ] error receiving message: %s", utils.GetCurrTimeUTC(), err)
+		return fmt.Errorf("[ OP CODE 11 ] error receiving message: %s", err)
 	}
 
 	if err := json.NewDecoder(bytes.NewReader(msg)).Decode(&op11ACK); err != nil {
-		return fmt.Errorf("%s: [OP CODE 11 ] error parsing json data: %s", utils.GetCurrTimeUTC(), err)
+		return fmt.Errorf("[OP CODE 11 ] error parsing json data: %s", err)
 	}
 
-	fmt.Printf("%s: [ OP CODE 11 ] received: %s\n", utils.GetCurrTimeUTC(), msg)
+	fmt.Printf("[ OP CODE 11 ] received: %s\n", msg)
 
 	return nil
 }
@@ -126,10 +126,10 @@ func Identity(connection *websocket.Conn) error {
 
 	err := connection.WriteJSON(op2Identity)
 	if err != nil {
-		return fmt.Errorf("%s: error during writing to websocket: %s", utils.GetCurrTimeUTC(), err)
+		return fmt.Errorf("error during writing to websocket: %s", err)
 	}
 
-	fmt.Printf("%s: [ OP CODE 02 ] sending Identity payload", utils.GetCurrTimeUTC())
+	fmt.Printf("[ OP CODE 02 ] sending Identity payload", utils.GetCurrTimeUTC())
 
 	return nil
 }
@@ -137,17 +137,17 @@ func Identity(connection *websocket.Conn) error {
 func Ready(connection *websocket.Conn) error {
 	var ready opcodes.OP0Ready
 
-	fmt.Printf("%s: [ OP CODE 0 ] reading message returned from server", utils.GetCurrTimeUTC())
+	fmt.Printf("[ OP CODE 0 ] reading message returned from server", utils.GetCurrTimeUTC())
 	_, msg, err := connection.ReadMessage()
 	if err != nil {
-		return fmt.Errorf("%s: [ OP CODE 0 ] error receiving message: %s", utils.GetCurrTimeUTC(), err)
+		return fmt.Errorf("[ OP CODE 0 ] error receiving message: %s", err)
 	}
 
 	if err := json.NewDecoder(bytes.NewReader(msg)).Decode(&ready); err != nil {
-		return fmt.Errorf("%s: [ OP CODE 0 ] error parsing json data: %s", utils.GetCurrTimeUTC(), err)
+		return fmt.Errorf("[ OP CODE 0 ] error parsing json data: %s", err)
 	}
 
-	fmt.Printf("%s: [ OP CODE 0 ] Received: %s", msg, utils.GetCurrTimeUTC())
+	fmt.Printf("[ OP CODE 0 ] Received: %s", msg)
 
 	return nil
 }
