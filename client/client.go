@@ -17,6 +17,8 @@ func Start() error {
 		log.Fatal("failed to authenticate user")
 		return err
 	}
+
+	return nil
 }
 
 func AuthenticateUser() error {
