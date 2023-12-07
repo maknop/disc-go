@@ -10,11 +10,12 @@ import (
 	"github.com/maknop/disc-go/utils"
 )
 
-func Start() {
+func Start() error {
 	fmt.Print("attempting to authenticate user")
 
 	if err := AuthenticateUser(); err != nil {
 		log.Fatal("failed to authenticate user")
+		return err
 	}
 }
 
