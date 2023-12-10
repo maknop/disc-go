@@ -28,10 +28,10 @@ func Start() error {
 
 func AuthenticateUser(ctx context.Context) error {
 	log.Info("Loading environment variables")
-	err := config.LoadEnv()
-	if err != nil {
+	if err := config.LoadEnv(); err != nil {
 		log.Fatalf("there was an error loading .env file: %v", err)
 	}
+	log.Info(".env file successfully loaded")
 
 	if err := gateway.EstablishConnection(ctx); err != nil {
 		return fmt.Errorf("there was an issue establishing gateway connection: %v", err)

@@ -21,7 +21,5 @@ func LoadEnv() error {
 		return fmt.Errorf("failed to load .env file: %s", err)
 	}
 
-	fmt.Printf(".env file successfully loaded")
-
 	return nil
 }

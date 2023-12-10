@@ -8,7 +8,6 @@ import (
 	"os"
 
 	opcodes "github.com/maknop/disc-go/types"
-	utils "github.com/maknop/disc-go/utils"
 
 	"github.com/gorilla/websocket"
 	log "github.com/sirupsen/logrus"
@@ -28,13 +27,13 @@ func EstablishConnection(ctx context.Context) error {
 	connection.EnableWriteCompression(true)
 	connection.SetCompressionLevel(1)
 
-	fmt.Printf("[ OP CODE 10 ] sending initial request to Discord Gateway server", utils.GetCurrTimeUTC())
+	log.Info("[ OP CODE 10 ] sending initial request to Discord Gateway server")
 	heartbeatInterval, sequenceNum, err := ReceiveMessage(connection)
 	if err != nil {
 		return fmt.Errorf("[ OP CODE 10 ] could not retrieve heartbeat interval: %s", err)
 	}
 
-	fmt.Printf("[ OP CODE 10 ] value of heartbeat interval is: %d seconds", (heartbeatInterval / 1000))
+	log.Info(fmt.Sprintf("[ OP CODE 10 ] value of heartbeat interval is: %d seconds", (heartbeatInterval / 1000)))
 
 	// OP 1 Heartbeat
 	if err := SendMessage(connection, sequenceNum); err != nil {
@@ -64,7 +63,7 @@ func ReceiveMessage(connection *websocket.Conn) (int, *int, error) {
 		return 0, nil, fmt.Errorf("[ OP CODE 10 ] error receiving message: %s", err)
 	}
 
-	fmt.Printf("[ OP CODE 10 ] received: %s\n", msg)
+	log.Info(fmt.Sprintf("[ OP CODE 10 ] received: %s", msg))
 
 	var OP10Hello opcodes.OP10Hello
 
@@ -86,7 +85,7 @@ func SendMessage(connection *websocket.Conn, sequenceNum *int) error {
 		return err
 	}
 
-	fmt.Printf("[ OP CODE 01 ] sending the following payload: {op: %d, d: {Seq: %v}}", op1Heartbeat.OP, op1Heartbeat.D.Sequence)
+	log.Info(fmt.Sprintf("[ OP CODE 01 ] sending the following payload: {op: %d, d: {Seq: %v}}", op1Heartbeat.OP, op1Heartbeat.D.Sequence))
 
 	return nil
 }
@@ -103,7 +102,7 @@ func ACK(connection *websocket.Conn) error {
 		return fmt.Errorf("[OP CODE 11 ] error parsing json data: %s", err)
 	}
 
-	fmt.Printf("[ OP CODE 11 ] received: %s\n", msg)
+	log.Info(fmt.Printf("[ OP CODE 11 ] received: %s", msg))
 
 	return nil
 }
@@ -129,7 +128,7 @@ func Identity(connection *websocket.Conn) error {
 		return fmt.Errorf("error during writing to websocket: %s", err)
 	}
 
-	fmt.Printf("[ OP CODE 02 ] sending Identity payload", utils.GetCurrTimeUTC())
+	log.Info("[ OP CODE 02 ] sending Identity payload")
 
 	return nil
 }
@@ -137,7 +136,7 @@ func Identity(connection *websocket.Conn) error {
 func Ready(connection *websocket.Conn) error {
 	var ready opcodes.OP0Ready
 
-	fmt.Printf("[ OP CODE 0 ] reading message returned from server", utils.GetCurrTimeUTC())
+	log.Info("[ OP CODE 0 ] reading message returned from server")
 	_, msg, err := connection.ReadMessage()
 	if err != nil {
 		return fmt.Errorf("[ OP CODE 0 ] error receiving message: %s", err)
@@ -147,7 +146,7 @@ func Ready(connection *websocket.Conn) error {
 		return fmt.Errorf("[ OP CODE 0 ] error parsing json data: %s", err)
 	}
 
-	fmt.Printf("[ OP CODE 0 ] Received: %s", msg)
+	log.Info(fmt.Sprintf("[ OP CODE 0 ] Received: %s", msg))
 
 	return nil
 }
