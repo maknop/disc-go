@@ -6,20 +6,7 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
-
-	"github.com/joho/godotenv"
 )
-
-func LoadEnvVars() error {
-	err := godotenv.Load(".env")
-	if err != nil {
-		return fmt.Errorf("failed to load .env file: %s", err)
-	}
-
-	fmt.Printf(".env file successfully loaded")
-
-	return nil
-}
 
 func TerminateGracefully() {
 	c := make(chan os.Signal, 1)
