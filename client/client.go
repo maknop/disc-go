@@ -37,7 +37,7 @@ func AuthenticateUser(ctx context.Context) error {
 		return fmt.Errorf("there was an issue establishing gateway connection: %v", err)
 	}
 
-	log.Info("authentication was successful to the gateway")
+	// log.Info("authentication was successful to the gateway")
 
 	return nil
 }

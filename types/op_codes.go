@@ -1,9 +1,5 @@
 package opcodes
 
-/*
-Required for initial gateway connection
-- OP_10, OP_1, OP_11, OP_2
-*/
 type OP10Hello struct {
 	OP *int          `json:"op"`
 	D  OP10HelloData `json:"d"`
@@ -16,12 +12,8 @@ type OP10HelloData struct {
 }
 
 type OP1Heartbeat struct {
-	OP int              `json:"op"`
-	D  OP1HeartbeatData `json:"d"`
-}
-
-type OP1HeartbeatData struct {
-	Sequence *int `json:"seq"`
+	OP int  `json:"op"`
+	D  *int `json:"d"`
 }
 
 type OP11HeartbeatACK struct {
